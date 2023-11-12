@@ -33,7 +33,7 @@ public class TetroBehav : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                curt = 1;
+                curt = -1;
             }
 
             curt += Time.deltaTime;
@@ -41,6 +41,10 @@ public class TetroBehav : MonoBehaviour
             {
                 TFall();
                 curt = 0;
+            }
+            else if(curt < 0)
+            {
+                TFall(); TFall();
             }
         }
     }
@@ -110,5 +114,10 @@ public class TetroBehav : MonoBehaviour
                 transform.position += new Vector3(1, 0, 0);
             }
         }
+    }
+    
+    public void SetMovable(bool tf)
+    {
+        movable = tf;
     }
 }
