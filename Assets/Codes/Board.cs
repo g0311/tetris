@@ -16,33 +16,40 @@ public class Board : MonoBehaviour
     int point = 0;
     void Update()
     {
-        for(int i = 0; i < 20; i++)
+        if (checkLineFull())
         {
-            if (checkLineFull(i))
-            {
-                point++;
-                DestroyLine(i);
-            }
+            point++;
+            DestroyLine();
         }
     }
-
-    bool checkLineFull(int y)
+    bool checkLineFull() //최하 라인 체크
     {
          for(int i = 0; i < 10; i++)
         {
-            if(grid[i,y] == null)
+            if(grid[i,0] == null)
             {
                 return false;
             }
         }
         return true;
     }
-    void DestroyLine(int y)
+    void DestroyLine() //최하 라인 파괴
     {
         for(int i = 0; i < 10; i++)
         {
-            Destroy(grid[i, y].gameObject);
-            grid[i, y] = null;
+            Destroy(grid[i, 0].gameObject);
+            grid[i, 0] = null;
+            LineDown();
+        }
+    }
+    void LineDown() //파괴 후 테트로들 한칸 낮추기?
+    {
+        for (int i = 0; i < 20; i++)
+        {
+            for(int j = 1; j < 10; j++)
+            {
+
+            }
         }
     }
 }
