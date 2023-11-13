@@ -19,32 +19,16 @@ public class TetroBehav : MonoBehaviour
     {
         if (movable)
         {
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                TMove(0);
-            }
-            if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                TMove(1);
-            }
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                TRotate();
-            }
-            if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                curt = -1;
-            }
-
             curt += Time.deltaTime;
-            if (curt >= 1)
+            if (curt > 1)
             {
                 TFall();
                 curt = 0;
             }
-            else if(curt < 0)
+            else if(curt == 1)
             {
-                TFall(); TFall();
+                TFall();
+                TFall();
             }
         }
     }
@@ -88,7 +72,7 @@ public class TetroBehav : MonoBehaviour
         }
         movable = false;
     }
-    void TRotate() //회전 구현
+    public void TRotate() //회전 구현
     {
         transform.Rotate(new Vector3(0, 0, 90));
         if (!isValidMove())
@@ -96,7 +80,7 @@ public class TetroBehav : MonoBehaviour
             transform.Rotate(new Vector3(0, 0, -90));
         }
     }
-    void TMove(int way) //이동 구현
+    public void TMove(int way) //이동 구현
     {
         if (way == 1)
         {
@@ -115,9 +99,20 @@ public class TetroBehav : MonoBehaviour
             }
         }
     }
-    
-    public void SetMovable(bool tf)
+    public void setMovable(bool tf)
     {
         movable = tf;
+    }
+    public bool getMovable()
+    {
+        return movable;
+    }
+    public void setCurt(int ct)
+    {
+        curt = ct;
+    }
+    public void setParentBoard(GameObject bd)
+    {
+        parentBoard = bd;
     }
 }
