@@ -2,16 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerInfo : MonoBehaviour
+public class TPlayer : MonoBehaviour
 {
     public int PlayerType;
 
-    private Board bd;
+    private TBoard bd;
     TetroBehav tController;
     // Start is called before the first frame update
     void Start()
     {
-        bd = GetComponentInChildren<Board>();
+        bd = GetComponentInChildren<TBoard>();
+        bd.enabled = false;
     }
     private void Update()
     {
@@ -26,24 +27,27 @@ public class PlayerInfo : MonoBehaviour
         switch (PlayerType)
         {
             case -1: //플레이어가 없음
-                enabled = false;
-                bd.GetComponent<Board>().enabled = false;
+                bd.enabled = false;
                 break;
 
             case 1: //플레이어가 본인임
+                bd.enabled = true;
                 Handle1PInput();
                 break;
 
             case 2: //2번째 플레이어 (로컬 멀티)
-                enabled = true;
-                bd.GetComponent<Board>().enabled = true;
+                bd.enabled = true;
+                bd.GetComponent<TBoard>().enabled = true;
                 Handle2PInput();
                 break;
 
             case 3: //AI가 플레이
-                enabled = true;
-                bd.GetComponent<Board>().enabled = true;
+                bd.enabled = true;
+                bd.GetComponent<TBoard>().enabled = true;
                 HandleAiInput();
+                break;
+
+            case 4: //poton 멀티
                 break;
 
         }
@@ -66,7 +70,7 @@ public class PlayerInfo : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                tController.setCurt(1);
+                tController.setCurt(2);
             }
         }
     }
@@ -88,7 +92,7 @@ public class PlayerInfo : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.S))
             {
-                tController.setCurt(1);
+                tController.setCurt(2);
             }
         }
     }

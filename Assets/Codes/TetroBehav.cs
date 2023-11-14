@@ -10,8 +10,7 @@ public class TetroBehav : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        movable = true;
-        grid = parentBoard.GetComponent<Board>().grid;
+       grid = parentBoard.GetComponent<TBoard>().grid;
     }
     float curt = 0;
     // Update is called once per frame
@@ -24,11 +23,6 @@ public class TetroBehav : MonoBehaviour
             {
                 TFall();
                 curt = 0;
-            }
-            else if(curt == 1)
-            {
-                TFall();
-                TFall();
             }
         }
     }

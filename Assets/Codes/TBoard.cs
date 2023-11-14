@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board : MonoBehaviour
+public class TBoard : MonoBehaviour
 {
     public Transform[,] grid = new Transform[10, 20]; //각 좌표마다 타일을 저장할 배열
     public GameObject[] tetroSpawner;
@@ -10,17 +10,19 @@ public class Board : MonoBehaviour
     // Start is called before the first frame update
     void Start() //플레이어에 따른 설정 필요
     {
-        int tetroC = Random.Range(0, 7);
-        ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
-        ControllTetro[0].GetComponent<TetroBehav>().setParentBoard(gameObject);
-        ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
-        //for (int i = 0; i < 2; i++)
-        //{
-            //int tetroC = Random.Range(0, 7);
-            //ControllTetro[i] = Instantiate(tetroSpawner[tetroC]);
-            //ControllTetro[i].transform.position = 
-            //ControllTetro[i].GetComponent<TetroBehav>().setMovable(false);
-        //}
+        if (GetComponentInParent<TPlayer>().PlayerType != -1)
+        {
+            int tetroC = Random.Range(0, 7);
+            ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
+            ControllTetro[0].GetComponent<TetroBehav>().setParentBoard(gameObject);
+            ControllTetro[0].GetComponent<TetroBehav>().setMovable(true);
+            ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
+            Debug.Log("1");
+            tetroC = Random.Range(0, 7);
+            ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
+            ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
+            ControllTetro[1].transform.position = transform.position + new Vector3(14, 19, -0.2f);
+        }
     }
 
     // Update is called once per frame
@@ -36,12 +38,11 @@ public class Board : MonoBehaviour
                 DestroyLine(i);
             }
         }
+
         if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
         {
-            int tetroC = Random.Range(0, 7);
-            ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
-            ControllTetro[0].GetComponent<TetroBehav>().setParentBoard(gameObject);
-            ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
+            Debug.Log("3");
+            newTetro();
         }
     }
     bool checkLineFull(int y) //입력 받은 행 체크
@@ -79,6 +80,18 @@ public class Board : MonoBehaviour
                 grid[x, y] = null;
             }
         }
+    }
+
+    private void newTetro()
+    {
+        ControllTetro[0] = ControllTetro[1];
+        ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
+        ControllTetro[0].GetComponent<TetroBehav>().setMovable(true);
+        int tetroC = Random.Range(0, 7);
+        ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
+        ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
+        ControllTetro[1].GetComponent<TetroBehav>().setMovable(false);
+        ControllTetro[1].transform.position = transform.position + new Vector3(14, 19, -0.2f);
     }
 
     public GameObject getCurTetro()
