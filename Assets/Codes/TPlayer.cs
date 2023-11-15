@@ -52,7 +52,7 @@ public class TPlayer : MonoBehaviour
             case 3: //AI가 플레이
                 if (!isAiHandling)
                 {
-                    StartCoroutine(HandleAiInput());
+                    StartCoroutine(HandleAiInput()); //함수가 끝날때까지 대기
                 }
                 break;
 
@@ -63,7 +63,7 @@ public class TPlayer : MonoBehaviour
     }
     private void Handle1PInput()
     {
-        if(bd.getCurTetro() != null)
+        if (bd.getCurTetro() != null)
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
@@ -114,8 +114,8 @@ public class TPlayer : MonoBehaviour
         }
     }
     private IEnumerator HandleAiInput()
-        //ai 제작 방법 > 시뮬레이션 > 메트릭 계산 > 가장 좋은 동작 선택
-        //메트릭 >> 1. 높이 평균이 낮게 2. 빈 구멍이 적게
+    //ai 제작 방법 > 시뮬레이션 > 메트릭 계산 > 가장 좋은 동작 선택
+    //메트릭 >> 1. 높이 평균이 낮게 2. 빈 구멍이 적게
     {
         isAiHandling = true;
         bdcp = Instantiate(bd.gameObject);
@@ -124,14 +124,15 @@ public class TPlayer : MonoBehaviour
         bdcp.transform.position = new Vector3(-40, -9, 0.2f);
         bdcp.GetComponent<TBoard>().grid = (Transform[,])bd.grid.Clone();
         Transform[,] grid = bdcp.GetComponent<TBoard>().grid;
-
+        //실제 보드를 기준으로 고스트 보드 생성
 
         TetroBehav CurT = Instantiate(bd.getCurTetro()[0]).GetComponent<TetroBehav>();
         CurT.setParentBoard(bdcp);
+        //현재 테트로미노 블록 복사본 생성
 
         TetroBehav NexT = Instantiate(bd.getCurTetro()[1]).GetComponent<TetroBehav>();
         NexT.setParentBoard(bdcp);
-
+        //다음 테트로미노 블록 복사본 생성
         Debug.Log("AIHANDLING");
 
         int CbestRotation = 0;
@@ -146,9 +147,9 @@ public class TPlayer : MonoBehaviour
              //지금 테트로 배치하기.bdcp
                 CurT.transform.rotation = Quaternion.Euler(0, 0, ctr * 90);
                 CurT.transform.position = bdcp.transform.position + new Vector3(ctp, 17, -0.2f);
-                
+
                 //Debug.Log(ctr + " " + ctp);
-                
+
                 if (!CurT.isValidMove())
                 {
                     continue;
@@ -157,7 +158,7 @@ public class TPlayer : MonoBehaviour
                 CurT.MovetBottom();
                 for (int ntr = 0; ntr < 4; ntr++)
                 {//다음 테트로 회전
-                    for(int ntp = 0; ntp < 10; ntp++)
+                    for (int ntp = 0; ntp < 10; ntp++)
                     {//다음 테트로 위치
                      //다음 테트로 배치하기
                         NexT.transform.Rotate(new Vector3(0, 0, 90));
@@ -170,20 +171,23 @@ public class TPlayer : MonoBehaviour
                         Debug.Log("시뮬");
                         CurT.setMovable(true);
                         NexT.MovetBottom();
-                        AHeight = CalculateAverHeight(grid);
-                        //EBlcok = CalculateEmptyBlock(grid);
-                        float curScore = AHeight + EBlcok;
+                        AHeight = CalculateAverHeight(grid) * 3;
+                        EBlcok = CalculateEmptyBlock(grid) * 5;
+                        float CLineCompletion = CalculateLineCompletion(grid) * 10; // add this line
+                        float DisconBlocks = CalculateDisconnectedBlocks(grid) * 5;
+                        float curScore = AHeight + EBlcok + CLineCompletion;
 
-                        if(bestscore > curScore) //적은 점수 선택
+
+                        if (bestscore > curScore) //적은 점수 선택
                         {
                             bestscore = curScore;
                             CbestRotation = ctr;
                             CbestPosition = ctp;
                         }
-                        else if( bestscore == curScore) //점수가 같을 시 랜덤하게 선택
+                        else if (bestscore == curScore) //점수가 같을 시 랜덤하게 선택
                         {
                             int x = Random.Range(0, 2);
-                            if(x == 1)
+                            if (x == 1)
                             {
                                 bestscore = curScore;
                                 CbestRotation = ctr;
@@ -199,7 +203,7 @@ public class TPlayer : MonoBehaviour
 
         //시뮬레이션 값 대로 이동
         Debug.Log("RESULt " + AHeight + " " + EBlcok + " " + CbestRotation + " " + CbestPosition + " " + bestscore);
-        tController.TFall(); tController.TFall(); 
+        tController.TFall(); tController.TFall();
         for (int i = 0; i < CbestRotation; i++)
         {
             tController.TRotate();
@@ -207,7 +211,7 @@ public class TPlayer : MonoBehaviour
         int pos = 4;
         while (pos != CbestPosition)
         {
-            if(pos < CbestPosition)
+            if (pos < CbestPosition)
             {
                 tController.TMove(1);
                 pos++;
@@ -228,20 +232,28 @@ public class TPlayer : MonoBehaviour
     private float CalculateAverHeight(Transform[,] grid)
     {
         float SumHeight = 0;
-        for(int i = 0; i < 10; i++)
+        int nonEmptyColumns = 0;
+        for (int i = 0; i < 10; i++)
         {
+            bool isEmptyColumn = true;
             for (int j = 19; j >= 0; j--)
             {
-                if(grid[i,j] != null)
+                if (grid[i, j] != null)
                 {
                     SumHeight += j + 1;
+                    isEmptyColumn = false;
                     break;
                 }
             }
+            if (!isEmptyColumn)
+            {
+                nonEmptyColumns++;
+            }
         }
-        SumHeight /= 10;
+        SumHeight /= nonEmptyColumns;
         return SumHeight;
     }
+
     private float CalculateEmptyBlock(Transform[,] grid)
     {
         float SumEBlock = 0;
@@ -255,12 +267,53 @@ public class TPlayer : MonoBehaviour
                 {
                     BlStartPoint = true;
                 }
-                if (BlStartPoint && grid[i,j] == null)
+                if (BlStartPoint && grid[i, j] == null)
                 {
-                    SumEBlock++;
+                    SumEBlock += j + 1; // 높이를 고려하여 빈 블록의 위험도를 계산
                 }
             }
         }
         return SumEBlock;
+    }
+    private float CalculateLineCompletion(Transform[,] grid)
+    {
+        float totalCompletion = 0;
+        for (int j = 0; j < 20; j++)
+        {
+            int lineCompletion = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                if (grid[i, j] != null)
+                {
+                    lineCompletion++;
+                }
+            }
+            totalCompletion += lineCompletion;
+        }
+        return totalCompletion / (20 * 10); // normalize the value
+    }
+    private float CalculateDisconnectedBlocks(Transform[,] grid)
+    {
+        float disconnectedBlocks = 0;
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 20; j++)
+            {
+                if (grid[i, j] != null)
+                {
+                    // 왼쪽 블록 검사
+                    if (i > 0 && grid[i - 1, j] == null)
+                    {
+                        disconnectedBlocks++;
+                    }
+                    // 오른쪽 블록 검사
+                    if (i < 9 && grid[i + 1, j] == null)
+                    {
+                        disconnectedBlocks++;
+                    }
+                }
+            }
+        }
+        return disconnectedBlocks;
     }
 }

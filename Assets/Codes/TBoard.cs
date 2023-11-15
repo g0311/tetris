@@ -33,22 +33,26 @@ public class TBoard : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isGameOver) {
-            int point = 0;
-            for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
+        if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
+        {
+            if (!isGameOver)
             {
-                if (checkLineFull(i))
+                int point = 0;
+                for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
                 {
-                    point++;
-                    DestroyLine(i);
+                    if (checkLineFull(i))
+                    {
+                        point++;
+                        DestroyLine(i);
+                    }
+                }
+
+                if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
+                {
+                    newTetro();
                 }
             }
-
-            if (!isghost && !ControllTetro[0].GetComponent<TetroBehav>().getMovable())
-            {
-                newTetro();
-            }
-        } 
+        }
     }
     bool checkLineFull(int y) //입력 받은 행 체크
     {
