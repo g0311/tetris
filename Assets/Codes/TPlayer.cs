@@ -137,9 +137,7 @@ public class TPlayer : MonoBehaviour
 
         int CbestRotation = 0;
         int CbestPosition = 0;
-        float AHeight = 0;
-        float EBlcok = 0;
-        float bestscore = float.PositiveInfinity;
+        float bestscore = float.NegativeInfinity;
         for (int ctr = 0; ctr < 4; ctr++)
         {//컨트롤 테트로 회전
             for (int ctp = 0; ctp < 10; ctp++)
@@ -161,7 +159,7 @@ public class TPlayer : MonoBehaviour
                     for (int ntp = 0; ntp < 10; ntp++)
                     {//다음 테트로 위치
                      //다음 테트로 배치하기
-                        NexT.transform.Rotate(new Vector3(0, 0, 90));
+                        NexT.transform.rotation = Quaternion.Euler(0, 0, ctr * 90);
                         NexT.transform.position = bdcp.transform.position + new Vector3(ntp, 17, -0.2f);
 
                         if (!NexT.isValidMove())
@@ -169,16 +167,11 @@ public class TPlayer : MonoBehaviour
                             continue;
                         }
                         Debug.Log("시뮬");
-                        CurT.setMovable(true);
+                        NexT.setMovable(true);
                         NexT.MovetBottom();
-                        AHeight = CalculateAverHeight(grid) * 3;
-                        EBlcok = CalculateEmptyBlock(grid) * 5;
-                        float CLineCompletion = CalculateLineCompletion(grid) * 10; // add this line
-                        float DisconBlocks = CalculateDisconnectedBlocks(grid) * 5;
-                        float curScore = AHeight + EBlcok + CLineCompletion;
 
-
-                        if (bestscore > curScore) //적은 점수 선택
+                        float curScore = CalculateBoardScore(grid);
+                        if (bestscore < curScore)
                         {
                             bestscore = curScore;
                             CbestRotation = ctr;
@@ -200,9 +193,8 @@ public class TPlayer : MonoBehaviour
                 CurT.DSave();
             }
         }
-
         //시뮬레이션 값 대로 이동
-        Debug.Log("RESULt " + AHeight + " " + EBlcok + " " + CbestRotation + " " + CbestPosition + " " + bestscore);
+        Debug.Log("RESULt " + CbestRotation + " " + CbestPosition + " " + bestscore);
         tController.TFall(); tController.TFall();
         for (int i = 0; i < CbestRotation; i++)
         {
@@ -229,91 +221,217 @@ public class TPlayer : MonoBehaviour
         yield return null;
         isAiHandling = false;
     }
-    private float CalculateAverHeight(Transform[,] grid)
+    private float CalculateBoardScore(Transform[,] grid)
     {
-        float SumHeight = 0;
-        int nonEmptyColumns = 0;
-        for (int i = 0; i < 10; i++)
+        Transform[,] Simgrid = (Transform[,])grid.Clone();
+        // 복제 배열 추가, 그 복제배열에 대해서 업데이트
+        for (int y = 0; y < 20; y++)
         {
-            bool isEmptyColumn = true;
-            for (int j = 19; j >= 0; j--)
+            if (IsRowFull(Simgrid, y))
             {
-                if (grid[i, j] != null)
+                AssumeDeleteRow(Simgrid, y);
+            }
+        }
+        // 각 지표를 계산하고 가중치를 적용하여 보드의 점수를 계산합니다.
+        float sumHoles = CalculateHoles(Simgrid) * -1f; // 구멍 수 3 0
+        float sumHeight = CalculateSumHeight(Simgrid) * -1f; // 열 높이의 합 10 4
+        float rowFlips = CalculateRowFlips(Simgrid) * -1f; // 행 내에서 셀 상태가 바뀌는 횟수 2 0 
+        float columnFlips = CalculateColumnFlips(Simgrid) * -1f; // 열 내에서 셀 상태가 바뀌는 횟수 6 1
+        float pieceHeight = CalculatePieceHeight(Simgrid) * -1f; // 최고 블록의 높이 0 0
+        float sumWell = CalculateSumWell(Simgrid) * -1f; // 우물의 크기 -3 -2
+
+
+        return sumHoles + sumHeight + rowFlips + columnFlips + pieceHeight + sumWell;
+    }
+    private bool IsRowFull(Transform[,] grid, int y)
+    {
+        for (int x = 0; x < 10; x++)
+        {
+            if (grid[x, y] == null)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void AssumeDeleteRow(Transform[,] grid, int y)
+    {
+        for (int i = y; i < 19; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                grid[j, i] = grid[j, i + 1];
+            }
+        }
+        for (int j = 0; j < 10; j++)
+        {
+            grid[j, 19] = null;
+        }
+    }
+
+    private float CalculateHoles(Transform[,] grid)
+    { /* 구멍 수 계산 로직 */
+        float sumHoles = 0;
+        for (int x = 0; x < 10; x++)
+        {
+            bool startCounting = false;
+            for (int y = 19; y >= 0; y--)
+            {
+                if (grid[x, y] == null)
                 {
-                    SumHeight += j + 1;
-                    isEmptyColumn = false;
+                    if (startCounting)
+                    {
+                        startCounting = false;
+                        sumHoles++;
+                    }
+                }
+                else
+                {
+                    startCounting = true;
+                }
+            }
+        }
+        return sumHoles;
+    }
+    private float CalculateSumHeight(Transform[,] grid)
+    { /* 열 높이의 합 계산 로직 */
+        float sumHeight = 0;
+
+        for (int x = 0; x < 10; x++)
+        {
+            for (int y = 19; y >= 0; y--)
+            {
+                if (grid[x, y] != null)
+                {
+                    sumHeight += y;
                     break;
                 }
             }
-            if (!isEmptyColumn)
-            {
-                nonEmptyColumns++;
-            }
         }
-        SumHeight /= nonEmptyColumns;
-        return SumHeight;
+        return sumHeight;
     }
 
-    private float CalculateEmptyBlock(Transform[,] grid)
-    {
-        float SumEBlock = 0;
-        bool BlStartPoint = false;
-        for (int i = 0; i < 10; i++)
+    private float CalculateRowFlips(Transform[,] grid)
+    { /* 행 내에서 셀 상태가 바뀌는 횟수 계산 로직 */
+        float rowFlips = 0;
+        for (int y = 0; y < 20; y++)
         {
-            BlStartPoint = false;
-            for (int j = 19; j >= 0; j--)
+            bool prevCellFilled = true;  // 벽을 블록이 채워져 있다고 간주
+            for (int x = -1; x <= 10; x++)
             {
-                if (grid[i, j] != null)
+                bool currentCellFilled;
+                if (x < 0 || x >= 10)
                 {
-                    BlStartPoint = true;
+                    currentCellFilled = true;  // 벽을 블록이 채워져 있다고 간주
                 }
-                if (BlStartPoint && grid[i, j] == null)
+                else
                 {
-                    SumEBlock += j + 1; // 높이를 고려하여 빈 블록의 위험도를 계산
+                    currentCellFilled = grid[x, y] != null;
                 }
+                if (prevCellFilled != currentCellFilled)
+                {
+                    rowFlips++;
+                }
+                prevCellFilled = currentCellFilled;
             }
         }
-        return SumEBlock;
+        return rowFlips;
     }
-    private float CalculateLineCompletion(Transform[,] grid)
-    {
-        float totalCompletion = 0;
-        for (int j = 0; j < 20; j++)
+
+    private float CalculateColumnFlips(Transform[,] grid)
+    {   /* 열 내에서 셀 상태가 바뀌는 횟수 계산 로직 */
+        float columnFlips = 0;
+        for (int x = 0; x < 10; x++)
         {
-            int lineCompletion = 0;
-            for (int i = 0; i < 10; i++)
+            bool prevCellFilled = true;  // 벽을 블록이 채워져 있다고 간주
+            for (int y = -1; y <= 20; y++)
             {
-                if (grid[i, j] != null)
+                bool currentCellFilled;
+                if (y < 0 || y >= 20)
                 {
-                    lineCompletion++;
+                    currentCellFilled = true;  // 벽을 블록이 채워져 있다고 간주
                 }
+                else
+                {
+                    currentCellFilled = grid[x, y] != null;
+                }
+                if (prevCellFilled != currentCellFilled)
+                {
+                    columnFlips++;
+                }
+                prevCellFilled = currentCellFilled;
             }
-            totalCompletion += lineCompletion;
         }
-        return totalCompletion / (20 * 10); // normalize the value
+        return columnFlips;
     }
-    private float CalculateDisconnectedBlocks(Transform[,] grid)
-    {
-        float disconnectedBlocks = 0;
-        for (int i = 0; i < 10; i++)
+
+    private float CalculatePieceHeight(Transform[,] grid)
+    {   /* 가장 최근에 놓인 블록의 높이 계산 로직 */
+        float pieceHeight = 0;
+
+        for (int x = 0; x < 10; x++)
         {
-            for (int j = 0; j < 20; j++)
+            for (int y = 19; y >= 0; y--)
             {
-                if (grid[i, j] != null)
+                if (grid[x, y] != null)
                 {
-                    // 왼쪽 블록 검사
-                    if (i > 0 && grid[i - 1, j] == null)
+                    if (pieceHeight < y)
                     {
-                        disconnectedBlocks++;
-                    }
-                    // 오른쪽 블록 검사
-                    if (i < 9 && grid[i + 1, j] == null)
-                    {
-                        disconnectedBlocks++;
+                        pieceHeight = y;
+                        break;
                     }
                 }
             }
         }
-        return disconnectedBlocks;
+
+        return pieceHeight;
+    }
+    private float CalculateSumWell(Transform[,] grid)
+    {
+        float sumWell = 0; // 우물의 총 깊이를 저장할 변수
+
+        // 모든 열에 대해 반복
+        for (int x = 0; x < 10; x++)
+        {
+            int wellDepth = 0; // 현재 열의 우물 깊이를 저장할 변수
+
+            // 한 열의 맨 위부터 맨 아래까지 반복
+            for (int y = 19; y >= 0; y--)
+            {
+                // 현재 위치에 블록이 없는 경우
+                if (grid[x, y] == null)
+                {
+                    // 맨 왼쪽 끝이거나, 왼쪽에 블록이 있는 경우
+                    // 또는 맨 오른쪽 끝이거나, 오른쪽에 블록이 있는 경우
+                    // 즉, 현재 위치가 우물의 일부분이라면
+                    if ((x == 0 || grid[x - 1, y] != null) &&
+                        (x == 9 || grid[x + 1, y] != null))
+                    {
+                        wellDepth++; // 우물 깊이를 증가
+                    }
+                }
+                else // 현재 위치에 블록이 있는 경우 
+                {
+                    // 우물이 끝난 경우
+                    if (wellDepth > 0)
+                    {
+                        // 총 우물 깊이에 현재 우물 깊이의 제곱을 더함
+                        // 제곱을 하는 이유는 깊이가 깊은 우물에 더 큰 페널티를 부과하기 위함
+                        sumWell += wellDepth * wellDepth;
+                        wellDepth = 0; // 우물 깊이 초기화
+                        break;
+                    }
+                }
+            }
+
+            // 한 열이 끝났을 때 아직 계산되지 않은 우물이 남아있는 경우
+            if (wellDepth > 0)
+            {
+                sumWell += wellDepth * wellDepth; // 남은 우물 깊이를 총 우물 깊이에 더함
+            }
+        }
+
+        return sumWell; // 총 우물 깊이 반환
     }
 }
