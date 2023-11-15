@@ -7,10 +7,14 @@ public class TBoard : MonoBehaviour
     public Transform[,] grid = new Transform[10, 20]; //각 좌표마다 타일을 저장할 배열
     public GameObject[] tetroSpawner;
     private GameObject[] ControllTetro = new GameObject[2]; //현재 컨트롤 중인 테트로 및 다음에 생성될 테트로미노
+    public GameObject GameOverPannel;
+    private bool isGameOver;
+    public bool isghost = false; //고스트 보드일시 새 테트로 생성 x
     // Start is called before the first frame update
     void Start() //플레이어에 따른 설정 필요
     {
-        if (GetComponentInParent<TPlayer>().PlayerType != -1)
+        GameOverPannel.SetActive(false);
+        if (GetComponentInParent<TPlayer>().PlayerType != -1 && !isghost)
         {
             int tetroC = Random.Range(0, 7);
             ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
@@ -23,27 +27,28 @@ public class TBoard : MonoBehaviour
             ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
             ControllTetro[1].transform.position = transform.position + new Vector3(14, 19, -0.2f);
         }
+        isGameOver = false;
     }
 
     // Update is called once per frame
-
     void Update()
     {
-        int point = 0;
-        for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
-        {
-            if (checkLineFull(i))
+        if (!isGameOver) {
+            int point = 0;
+            for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
             {
-                point++;
-                DestroyLine(i);
+                if (checkLineFull(i))
+                {
+                    point++;
+                    DestroyLine(i);
+                }
             }
-        }
 
-        if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
-        {
-            Debug.Log("3");
-            newTetro();
-        }
+            if (!isghost && !ControllTetro[0].GetComponent<TetroBehav>().getMovable())
+            {
+                newTetro();
+            }
+        } 
     }
     bool checkLineFull(int y) //입력 받은 행 체크
     {
@@ -87,6 +92,10 @@ public class TBoard : MonoBehaviour
         ControllTetro[0] = ControllTetro[1];
         ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
         ControllTetro[0].GetComponent<TetroBehav>().setMovable(true);
+        if (!ControllTetro[0].GetComponent<TetroBehav>().isValidMove())
+        {
+            GameOver();
+        }
         int tetroC = Random.Range(0, 7);
         ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
         ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
@@ -94,8 +103,14 @@ public class TBoard : MonoBehaviour
         ControllTetro[1].transform.position = transform.position + new Vector3(14, 19, -0.2f);
     }
 
-    public GameObject getCurTetro()
+    public GameObject[] getCurTetro()
     {
-        return ControllTetro[0];
+        return ControllTetro;
+    }
+
+    public void GameOver()
+    {
+        GameOverPannel.SetActive(true);
+        enabled = false;
     }
 }
