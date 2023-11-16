@@ -6,7 +6,7 @@ public class TetroBehav : MonoBehaviour
 {
     public GameObject parentBoard;
     private Transform[,] grid;
-    private bool movable = false;
+    public bool movable = false;
     float curt;
     // Start is called before the first frame update
     void Start()
@@ -40,7 +40,7 @@ public class TetroBehav : MonoBehaviour
             int x = Mathf.RoundToInt(children.position.x - parentBoard.transform.position.x); // ÇÑ Å¸ÀÏÀÇ xÁÂÇ¥
             int y = Mathf.RoundToInt(children.position.y - parentBoard.transform.position.y); // ÇÑ Å¸ÀÏÀÇ yÁÂÇ¥
             //±Ùµ¥ ÀÌ°Å ¾ê³× ÁÂÇ¥°¡ Àý´ë ÁÂÇ¥ ±âÁØ ¾Æ´Ô? ±×·¯¸é ÁÂÇ¥¾Ë¾Æ¾ßÇÔ
-            if (x < 0 || x >= 10 || y < 0 || y >= 20)
+            if (x < 0 || x >= 10 || y < 0 || y >= 22)
             {
                 return false;
             }

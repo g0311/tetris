@@ -305,6 +305,13 @@ MonoBehaviour:
   - {fileID: 3011735767054393470, guid: 940f79cb73b0bb6439ff3ed90d7653cf, type: 3}
   - {fileID: 3011735767054393470, guid: 6f1123079dbef224ba055c1d2ac6c32c, type: 3}
   - {fileID: 3011735767054393470, guid: 840ca6e3437d11a4bb17d8bdac44f027, type: 3}
+  - {fileID: 3011735767054393470, guid: 5eef77935322a844687fe578f46fe14b, type: 3}
+  - {fileID: 3011735767054393470, guid: 9aaee310acfce5f489f958e3969a0e6e, type: 3}
+  - {fileID: 3011735767054393470, guid: 1a8eb6805b6534a488c4aaa8a54ec334, type: 3}
+  - {fileID: 3011735767054393470, guid: 42a7295c4a49c6b44be943c1aeb357c1, type: 3}
+  EnemyBoard: {fileID: 0}
+  GameOverPannel: {fileID: 0}
+  isghost: 0
 --- !u!1001 &27356143891608255
 PrefabInstance:
   m_ObjectHideFlags: 0

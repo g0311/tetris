@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class TBoard : MonoBehaviour
 {
-    public Transform[,] grid = new Transform[10, 20]; //각 좌표마다 타일을 저장할 배열
+    public Transform[,] grid = new Transform[10, 22]; //각 좌표마다 타일을 저장할 배열
     public GameObject[] tetroSpawner;
     private GameObject[] ControllTetro = new GameObject[2]; //현재 컨트롤 중인 테트로 및 다음에 생성될 테트로미노
-    public GameObject GameOverPannel;
-    private bool isGameOver;
+    public TBoard EnemyBoard;
+    public GameObject GameOverPannel; //게임 오버 출력 ui
+    private bool isGameOver; //게임 오버 여부 판단 변수
     public bool isghost = false; //고스트 보드일시 새 테트로 생성 x
     // Start is called before the first frame update
     void Start() //플레이어에 따른 설정 필요
@@ -21,7 +22,7 @@ public class TBoard : MonoBehaviour
             ControllTetro[0].GetComponent<TetroBehav>().setParentBoard(gameObject);
             ControllTetro[0].GetComponent<TetroBehav>().setMovable(true);
             ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
-            Debug.Log("1");
+            //Debug.Log("1");
             tetroC = Random.Range(0, 7);
             ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
             ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
@@ -33,25 +34,43 @@ public class TBoard : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
+        if (!isghost && !isGameOver) //고스트 보드는 줄 파괴, 테트로 생성 x
         {
-            if (!isGameOver)
-            {
                 int point = 0;
                 for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
                 {
-                    if (checkLineFull(i))
+                    if (checkLineFull(i)) //이거 하면 줄을 삭제해버림
                     {
                         point++;
                         DestroyLine(i);
                     }
+                }
+                if (point == 2  && !EnemyBoard.GetIsGameOver())
+                {
+                    int temp = Random.Range(7, 9);
+                    GameObject[] EnemyTetros = EnemyBoard.GetControllTetro();
+                    Destroy(EnemyTetros[1].gameObject);
+                    EnemyTetros[1] = Instantiate(tetroSpawner[temp]);
+                    EnemyTetros[1].GetComponent<TetroBehav>().setParentBoard(EnemyBoard.gameObject);
+                    EnemyTetros[1].GetComponent<TetroBehav>().setMovable(false);
+                    EnemyTetros[1].transform.position = EnemyBoard.transform.position + new Vector3(14, 19, -0.2f);
+                }
+                if (point >= 3 && !EnemyBoard.GetIsGameOver())
+                {
+                    int temp = Random.Range(9, 11);
+                    GameObject[] EnemyTetros = EnemyBoard.GetControllTetro();
+                    Destroy(EnemyTetros[1].gameObject);
+                    EnemyTetros[1] = Instantiate(tetroSpawner[temp]);
+                    EnemyTetros[1].GetComponent<TetroBehav>().setParentBoard(EnemyBoard.gameObject);
+                    EnemyTetros[1].GetComponent<TetroBehav>().setMovable(false);
+                    EnemyTetros[1].transform.position = EnemyBoard.transform.position + new Vector3(14, 19, -0.2f);
                 }
 
                 if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
                 {
                     newTetro();
                 }
-            }
+            
         }
     }
     bool checkLineFull(int y) //입력 받은 행 체크
@@ -116,5 +135,14 @@ public class TBoard : MonoBehaviour
     {
         GameOverPannel.SetActive(true);
         enabled = false;
+    }
+    public bool GetIsGameOver()
+    {
+        return isGameOver;
+    }
+
+    public GameObject[] GetControllTetro()
+    {
+        return ControllTetro;
     }
 }

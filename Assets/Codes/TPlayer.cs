@@ -53,6 +53,7 @@ public class TPlayer : MonoBehaviour
                 if (!isAiHandling)
                 {
                     StartCoroutine(HandleAiInput()); //함수가 끝날때까지 대기
+                    return;
                 }
                 break;
 
@@ -133,8 +134,7 @@ public class TPlayer : MonoBehaviour
         TetroBehav NexT = Instantiate(bd.getCurTetro()[1]).GetComponent<TetroBehav>();
         NexT.setParentBoard(bdcp);
         //다음 테트로미노 블록 복사본 생성
-        Debug.Log("AIHANDLING");
-
+        
         int CbestRotation = 0;
         int CbestPosition = 0;
         float bestscore = float.NegativeInfinity;
@@ -166,7 +166,6 @@ public class TPlayer : MonoBehaviour
                         {
                             continue;
                         }
-                        Debug.Log("시뮬");
                         NexT.setMovable(true);
                         NexT.MovetBottom();
 
@@ -194,7 +193,7 @@ public class TPlayer : MonoBehaviour
             }
         }
         //시뮬레이션 값 대로 이동
-        Debug.Log("RESULt " + CbestRotation + " " + CbestPosition + " " + bestscore);
+        //Debug.Log("RESULt " + CbestRotation + " " + CbestPosition + " " + bestscore);
         tController.TFall(); tController.TFall();
         for (int i = 0; i < CbestRotation; i++)
         {
@@ -214,7 +213,13 @@ public class TPlayer : MonoBehaviour
                 pos--;
             }
         }
-        tController.MovetBottom();
+
+        while (tController.getMovable())
+        {
+            yield return new WaitForSeconds(0.1f);
+            tController.TFall();
+        }
+
         Destroy(bdcp);
         Destroy(NexT.gameObject);
         Destroy(CurT.gameObject);
@@ -241,7 +246,7 @@ public class TPlayer : MonoBehaviour
         float sumWell = CalculateSumWell(Simgrid) * -1f; // 우물의 크기 -3 -2
 
 
-        return sumHoles + sumHeight + rowFlips + columnFlips + pieceHeight + sumWell;
+        return sumHoles + sumHeight + rowFlips + columnFlips; // + pieceHeight; // + sumWell;
     }
     private bool IsRowFull(Transform[,] grid, int y)
     {
