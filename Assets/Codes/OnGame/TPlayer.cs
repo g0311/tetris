@@ -22,12 +22,15 @@ public class TPlayer : MonoBehaviour
             bdcp = Instantiate(bd.gameObject);
             bdcp.GetComponent<TBoard>().isghost = true;
             bdcp.transform.parent = this.transform;
+            //Debug.Log(bdcp.GetComponent<TBoard>() == null);
+            bdcp.GetComponent<TBoard>().enabled = true;
             bdcp.transform.position = new Vector3(-40, -9, 0.2f);
         }
     }
     private void Awake()
     {
         bd = GetComponentInChildren<TBoard>();
+        //Debug.Log(bd == null);
     }
     private void Update()
     {
@@ -122,13 +125,9 @@ public class TPlayer : MonoBehaviour
     //메트릭 >> 1. 높이 평균이 낮게 2. 빈 구멍이 적게
     {
         isAiHandling = true;
-        bdcp = Instantiate(bd.gameObject);
-        bdcp.GetComponent<TBoard>().isghost = true;
-        bdcp.transform.parent = this.transform;
-        bdcp.transform.position = new Vector3(-40, -9, 0.2f);
         bdcp.GetComponent<TBoard>().grid = (Transform[,])bd.grid.Clone();
         Transform[,] grid = bdcp.GetComponent<TBoard>().grid;
-        //실제 보드를 기준으로 고스트 보드 생성
+        //실제 보드를 기준으로 고스트 보드 업데이트
 
         TetroBehav CurT = Instantiate(bd.getCurTetro()[0]).GetComponent<TetroBehav>();
         CurT.setParentBoard(bdcp);
@@ -222,8 +221,6 @@ public class TPlayer : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
             tController.TFall();
         }
-
-        Destroy(bdcp);
         Destroy(NexT.gameObject);
         Destroy(CurT.gameObject);
         yield return null;

@@ -292,7 +292,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2623464759935016867}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ff8510c96445d848a55a6e6457cd70a, type: 3}
   m_Name: 
@@ -311,6 +311,8 @@ MonoBehaviour:
   - {fileID: 3011735767054393470, guid: 42a7295c4a49c6b44be943c1aeb357c1, type: 3}
   EnemyBoard: {fileID: 0}
   GameOverPannel: {fileID: 0}
+  PlayerPoint: {fileID: 0}
+  TSpawnPoint: {fileID: 0}
   isghost: 0
 --- !u!1001 &27356143891608255
 PrefabInstance:

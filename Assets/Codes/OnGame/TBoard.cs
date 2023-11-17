@@ -16,11 +16,12 @@ public class TBoard : MonoBehaviour
     public Text PlayerPoint; //보드 점수 ui
     private int PointSum = 0; // 보드 점수
     public GameObject TSpawnPoint; //다음 테트로 표현 위치
-    private bool isGameOver; //게임 오버 여부 판단 변수
     public bool isghost = false; //고스트 보드일시 새 테트로 생성 x
     // Start is called before the first frame update
-    void Start() //플레이어에 따른 설정 필요
+
+    void OnEnable() //플레이어에 따른 설정 필요
     {
+        //Debug.Log(GetComponentInParent<TPlayer>() == null);
         if (GetComponentInParent<TPlayer>().PlayerType != -1 && !isghost)
         {
             int tetroC = Random.Range(0, 7);
@@ -34,13 +35,12 @@ public class TBoard : MonoBehaviour
             ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
             ControllTetro[1].transform.position = TSpawnPoint.transform.position;
         }
-        isGameOver = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!isghost && !isGameOver) //고스트 보드는 줄 파괴, 테트로 생성 x
+        if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
         {
             int point = 0;
             for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
@@ -51,7 +51,7 @@ public class TBoard : MonoBehaviour
                     DestroyLine(i--); //줄을 삭제해버리면 검사하지 못하는 행이 생기므로 --
                 }
             }
-            if (point == 2 && !EnemyBoard.GetIsGameOver())
+            if (point == 2 && EnemyBoard.enabled)
             { //2개 행 파괴 시 펜토미노 생성
                 int temp = Random.Range(7, 9);
                 GameObject[] EnemyTetros = EnemyBoard.getCurTetro();
@@ -61,7 +61,7 @@ public class TBoard : MonoBehaviour
                 EnemyTetros[1].GetComponent<TetroBehav>().setMovable(false);
                 EnemyTetros[1].transform.position = EnemyBoard.TSpawnPoint.transform.position;
             }
-            if (point >= 3 && !EnemyBoard.GetIsGameOver())
+            if (point >= 3 && EnemyBoard.enabled)
             { //3개 이상 행 파괴 시 펜토미노 생성
                 int temp = Random.Range(9, 11);
                 GameObject[] EnemyTetros = EnemyBoard.getCurTetro();
@@ -145,9 +145,5 @@ public class TBoard : MonoBehaviour
     {
         GameOverPannel.SetActive(true);
         enabled = false;
-    }
-    public bool GetIsGameOver()
-    {
-        return isGameOver;
     }
 }
