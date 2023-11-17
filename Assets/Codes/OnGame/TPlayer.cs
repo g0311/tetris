@@ -13,7 +13,6 @@ public class TPlayer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        bd = GetComponentInChildren<TBoard>();
         if (PlayerType == -1)
         {
             bd.enabled = false;
@@ -25,6 +24,10 @@ public class TPlayer : MonoBehaviour
             bdcp.transform.parent = this.transform;
             bdcp.transform.position = new Vector3(-40, -9, 0.2f);
         }
+    }
+    private void Awake()
+    {
+        bd = GetComponentInChildren<TBoard>();
     }
     private void Update()
     {
@@ -438,5 +441,10 @@ public class TPlayer : MonoBehaviour
         }
 
         return sumWell; // √— øÏπ∞ ±Ì¿Ã π›»Ø
+    }
+
+    public TBoard GetPlayerBD()
+    {
+        return bd;
     }
 }
