@@ -33,22 +33,26 @@ public class MenuEvents : MonoBehaviourPunCallbacks
 
     void _1PListener()
     {
+        PlayerData.Instance.SetP1Name("1P");
         PlayerData.Instance.SetP2Name("");
         PlayerData.Instance.Set2P_Mode(-1);
         SceneManager.LoadScene("OnGame");
     }
     void _L2PListener()
     {
+        PlayerData.Instance.SetP1Name("1P");
         PlayerData.Instance.SetP2Name("2P");
         PlayerData.Instance.Set2P_Mode(2);
         SceneManager.LoadScene("OnGame");
     }
     void _O2PListener()
     {
+        PlayerData.Instance.Set2P_Mode(4);
         LoginUI.SetActive(true);
     }
     void _AIListener()
     {
+        PlayerData.Instance.SetP1Name("1P");
         PlayerData.Instance.SetP2Name("AI");
         PlayerData.Instance.Set2P_Mode(3);
         SceneManager.LoadScene("OnGame");
@@ -61,10 +65,6 @@ public class MenuEvents : MonoBehaviourPunCallbacks
     {
         PlayerData.Instance.SetP1Name(LoginUI.GetComponentInChildren<InputField>().text);
         PhotonNetwork.ConnectUsingSettings();
-    }
-    public override void OnConnected()
-    {
-        base.OnConnected();
     }
     public override void OnConnectedToMaster()
     {

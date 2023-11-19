@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class TPlayer : MonoBehaviour
+public class TPlayer : MonoBehaviourPunCallbacks
 {
     public int PlayerType;
 
@@ -64,6 +66,7 @@ public class TPlayer : MonoBehaviour
                 break;
 
             case 4: //poton 멀티
+                HandlePhotonInput();
                 break;
 
         }
@@ -443,5 +446,42 @@ public class TPlayer : MonoBehaviour
     public TBoard GetPlayerBD()
     {
         return bd;
+    }
+
+    private void HandlePhotonInput()
+    {
+        if (bd.getCurTetro() != null)
+        {
+            // PhotonNetwork.playerList 를 사용하여 다른 플레이어의 입력을 받아옵니다.
+            // 이를 위해, 각 플레이어는 자신의 입력을 PhotonNetwork에 전송해야 합니다.
+            // 예를 들어, 플레이어가 왼쪽 화살표 키를 누르면, 이 정보를 모든 플레이어에게 알립니다.
+            foreach (Player player in PhotonNetwork.PlayerList)
+            {
+                if (player != PhotonNetwork.LocalPlayer) // 다른 플레이어의 입력만 처리합니다.
+                {
+                    // 플레이어의 입력을 받아와서 처리합니다.
+                    // 이 예시에서는 간단하게 키 입력만을 받아오지만, 실제 게임에서는 플레이어의 전체 입력을 받아와야 합니다.
+                    string input = (string)player.CustomProperties["input"];
+                    switch (input)
+                    {
+                        case "left":
+                            tController.TMove(0);
+                            break;
+                        case "right":
+                            tController.TMove(1);
+                            break;
+                        case "rotate":
+                            tController.TRotate();
+                            break;
+                        case "down":
+                            tController.TFall();
+                            break;
+                        case "drop":
+                            tController.MovetBottom();
+                            break;
+                    }
+                }
+            }
+        }
     }
 }

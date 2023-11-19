@@ -28,11 +28,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         CreatingUI.GetComponentInChildren<Button>().onClick.AddListener(CreateBtnListener);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     void CreateRoomBtnListener()
     {
         CreatingUI.SetActive(true);
@@ -98,8 +93,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     }
     public override void OnJoinedRoom()
     {
+        // 준비 상태를 설정
+        PhotonNetwork.LocalPlayer.CustomProperties["IsReady"] = false;
         base.OnJoinedRoom();
-        //로비랑 크리에이트 ui 끄고 룸 ui 키기
+        //로비 ui 끄고 룸 ui 키기
         gameObject.SetActive(false);
         RoomUI.SetActive(true);
         //룸 ui에서는 준비 및 게임 시작
