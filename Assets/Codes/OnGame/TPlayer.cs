@@ -245,11 +245,8 @@ public class TPlayer : MonoBehaviourPunCallbacks
         float sumHeight = CalculateSumHeight(Simgrid) * -1f; // 열 높이의 합 10 4
         float rowFlips = CalculateRowFlips(Simgrid) * -1f; // 행 내에서 셀 상태가 바뀌는 횟수 2 0 
         float columnFlips = CalculateColumnFlips(Simgrid) * -1f; // 열 내에서 셀 상태가 바뀌는 횟수 6 1
-        float pieceHeight = CalculatePieceHeight(Simgrid) * -1f; // 최고 블록의 높이 0 0
-        float sumWell = CalculateSumWell(Simgrid) * -1f; // 우물의 크기 -3 -2
 
-
-        return sumHoles + sumHeight + rowFlips + columnFlips; // + pieceHeight; // + sumWell;
+        return sumHoles + sumHeight + rowFlips + columnFlips;
     }
     private bool IsRowFull(Transform[,] grid, int y)
     {
@@ -395,54 +392,6 @@ public class TPlayer : MonoBehaviourPunCallbacks
 
         return pieceHeight;
     }
-    private float CalculateSumWell(Transform[,] grid)
-    {
-        float sumWell = 0; // 우물의 총 깊이를 저장할 변수
-
-        // 모든 열에 대해 반복
-        for (int x = 0; x < 10; x++)
-        {
-            int wellDepth = 0; // 현재 열의 우물 깊이를 저장할 변수
-
-            // 한 열의 맨 위부터 맨 아래까지 반복
-            for (int y = 19; y >= 0; y--)
-            {
-                // 현재 위치에 블록이 없는 경우
-                if (grid[x, y] == null)
-                {
-                    // 맨 왼쪽 끝이거나, 왼쪽에 블록이 있는 경우
-                    // 또는 맨 오른쪽 끝이거나, 오른쪽에 블록이 있는 경우
-                    // 즉, 현재 위치가 우물의 일부분이라면
-                    if ((x == 0 || grid[x - 1, y] != null) &&
-                        (x == 9 || grid[x + 1, y] != null))
-                    {
-                        wellDepth++; // 우물 깊이를 증가
-                    }
-                }
-                else // 현재 위치에 블록이 있는 경우 
-                {
-                    // 우물이 끝난 경우
-                    if (wellDepth > 0)
-                    {
-                        // 총 우물 깊이에 현재 우물 깊이의 제곱을 더함
-                        // 제곱을 하는 이유는 깊이가 깊은 우물에 더 큰 페널티를 부과하기 위함
-                        sumWell += wellDepth * wellDepth;
-                        wellDepth = 0; // 우물 깊이 초기화
-                        break;
-                    }
-                }
-            }
-
-            // 한 열이 끝났을 때 아직 계산되지 않은 우물이 남아있는 경우
-            if (wellDepth > 0)
-            {
-                sumWell += wellDepth * wellDepth; // 남은 우물 깊이를 총 우물 깊이에 더함
-            }
-        }
-
-        return sumWell; // 총 우물 깊이 반환
-    }
-
     public TBoard GetPlayerBD()
     {
         return bd;
