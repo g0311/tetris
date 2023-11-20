@@ -23,7 +23,7 @@ public class GameMode : MonoBehaviour
     public Text StartCount;
     void Awake()
     {
-        P1.PlayerType = 1;
+        P1.PlayerType = PlayerData.Instance.Get1P_Mode();
         P2.PlayerType = PlayerData.Instance.Get2P_Mode();
         P1Name.text = PlayerData.Instance.GetP1Name();
         P2Name.text = PlayerData.Instance.GetP2Name();

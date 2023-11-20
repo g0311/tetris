@@ -21,9 +21,20 @@ public class PlayerData : MonoBehaviour
         }
     }
 
+    int _1P_Mode;
     int _2P_Mode;
+    string CurPlayer_name;
     string _1p_name;
     string _2p_name;
+
+    public void Set1P_Mode(int mode)
+    {
+        _1P_Mode = mode;
+    }
+    public int Get1P_Mode()
+    {
+        return _1P_Mode;
+    }
     public void Set2P_Mode(int mode)
     {
         _2P_Mode = mode;
@@ -31,6 +42,14 @@ public class PlayerData : MonoBehaviour
     public int Get2P_Mode()
     {
         return _2P_Mode;
+    }
+    public void SetCurName(string pname)
+    {
+        CurPlayer_name = pname;
+    }
+    public string GetCurName()
+    {
+        return CurPlayer_name;
     }
     public void SetP1Name(string pname)
     {

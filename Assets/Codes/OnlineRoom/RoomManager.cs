@@ -33,14 +33,26 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnEnable()
     {
         UpdatePanel();
+        PhotonNetwork.AutomaticallySyncScene = true;
+    }
+    private void Update()
+    {
+        Player[] players = PhotonNetwork.PlayerList;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if ((bool)players[i].CustomProperties["IsReadyChanged"])
+            {
+                players[i].CustomProperties["IsReadyChanged"] = false;
+                UpdatePanel();
+            }
+        }
     }
 
     private void ReadyListener()
     {    
-        // 준비 상태를 토글하고 패널을 업데이트합니다.
         bool currentReadyState = (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
+        PhotonNetwork.LocalPlayer.CustomProperties["IsReadyChanged"] = true;
         PhotonNetwork.LocalPlayer.CustomProperties["IsReady"] = !currentReadyState;
-        UpdatePanel();
     }
     private void ExitListener()
     {
@@ -50,6 +62,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     }
     public override void OnLeftRoom()
     {
+        PhotonNetwork.AutomaticallySyncScene = false;
         base.OnLeftRoom();
     }
 
@@ -85,6 +98,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         // 플레이어가 방에 들어오면 패널을 업데이트합니다.
+        Debug.Log("나감");
         UpdatePanel();
     }
 
@@ -96,6 +110,29 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     private void StartGame()
     {
+        Player[] players = PhotonNetwork.PlayerList;
+        int Pindex = -1;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].IsLocal)
+            {
+                Pindex = i;
+            }
+        }
+        if (Pindex == 0)
+        {
+            PlayerData.Instance.SetP1Name(players[0].NickName);
+            PlayerData.Instance.SetP2Name(players[1].NickName);
+            PlayerData.Instance.Set1P_Mode(1);
+            PlayerData.Instance.Set2P_Mode(4);
+        }
+        else
+        {
+            PlayerData.Instance.SetP1Name(players[1].NickName);
+            PlayerData.Instance.SetP2Name(players[0].NickName);
+            PlayerData.Instance.Set1P_Mode(4);
+            PlayerData.Instance.Set2P_Mode(1);
+        }
         PhotonNetwork.LoadLevel("OnGame");
     }
 }

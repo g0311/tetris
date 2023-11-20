@@ -685,6 +685,10 @@ PrefabInstance:
       propertyPath: GameOverPannel
       value: 
       objectReference: {fileID: 1208595327}
+    - target: {fileID: 414757593532444547, guid: 5a988eb2beaa7834fb64478661e54fe0, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2623464759935016867, guid: 5a988eb2beaa7834fb64478661e54fe0, type: 3}
       propertyPath: m_Name
       value: BD_2P
@@ -1211,6 +1215,10 @@ PrefabInstance:
       propertyPath: GameOverPannel
       value: 
       objectReference: {fileID: 1281388018}
+    - target: {fileID: 414757593532444547, guid: 5a988eb2beaa7834fb64478661e54fe0, type: 3}
+      propertyPath: sceneViewId
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2623464759935016867, guid: 5a988eb2beaa7834fb64478661e54fe0, type: 3}
       propertyPath: m_Name
       value: BD_1P

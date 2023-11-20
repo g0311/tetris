@@ -66,7 +66,7 @@ public class TPlayer : MonoBehaviourPunCallbacks
                 break;
 
             case 4: //poton ¸ÖÆ¼
-                HandlePhotonInput();
+                //HandlePhotonInput();
                 break;
 
         }
