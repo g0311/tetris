@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 
-public class TBoard : MonoBehaviour
+public class TBoard : MonoBehaviourPunCallbacks
 {
     public Transform[,] grid = new Transform[10, 22]; //각 좌표의 타일을 저장할 배열
     [SerializeField]
@@ -20,10 +20,24 @@ public class TBoard : MonoBehaviour
     public bool isghost = false; //고스트 보드일시 새 테트로 생성 x
     // Start is called before the first frame update
 
-    void OnEnable() //플레이어에 따른 설정 필요
+    [PunRPC]
+    public override void OnEnable() //플레이어에 따른 설정 필요
     {
-        //Debug.Log(GetComponentInParent<TPlayer>() == null);
-        if (GetComponentInParent<TPlayer>().PlayerType != -1 && !isghost)
+        if(PhotonNetwork.IsConnected)
+        {
+            Vector3 pos = transform.position + new Vector3(4, 19, -0.2f);
+            Quaternion rot = new Quaternion(0, 0, 0, 0);
+
+            int tetroC = Random.Range(0, 7);
+            ControllTetro[0] = PhotonNetwork.Instantiate(tetroSpawner[tetroC].name, pos, rot);
+            ControllTetro[0].GetComponent<TetroBehav>().setParentBoard(gameObject);
+
+            tetroC = Random.Range(0, 7);
+            pos = TSpawnPoint.transform.position;
+            ControllTetro[1] = PhotonNetwork.Instantiate(tetroSpawner[tetroC].name, pos, rot);
+            ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
+        }
+        else if (GetComponentInParent<TPlayer>().PlayerType != -1 && !isghost)
         {
             int tetroC = Random.Range(0, 7);
             ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
@@ -39,9 +53,51 @@ public class TBoard : MonoBehaviour
     }
 
     // Update is called once per frame
+    [PunRPC]
     void Update()
     {
-        if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
+        if (PhotonNetwork.IsConnected) 
+        {
+            int point = 0;
+            for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
+            {
+                if (checkLineFull(i)) //이거 하면 줄을 삭제해버림
+                {
+                    point++;
+                    DestroyLine(i--); //줄을 삭제해버리면 검사하지 못하는 행이 생기므로 --
+                }
+            }
+            if (point == 2 && EnemyBoard.enabled)
+            { //2개 행 파괴 시 펜토미노 생성
+                int temp = Random.Range(7, 9);
+                GameObject[] EnemyTetros = EnemyBoard.getCurTetro();
+                Destroy(EnemyTetros[1].gameObject);
+                EnemyTetros[1] = Instantiate(tetroSpawner[temp]);
+                EnemyTetros[1].GetComponent<TetroBehav>().setParentBoard(EnemyBoard.gameObject);
+                EnemyTetros[1].GetComponent<TetroBehav>().setMovable(false);
+                EnemyTetros[1].transform.position = EnemyBoard.TSpawnPoint.transform.position;
+            }
+            if (point >= 3 && EnemyBoard.enabled)
+            { //3개 이상 행 파괴 시 펜토미노 생성
+                int temp = Random.Range(9, 11);
+                GameObject[] EnemyTetros = EnemyBoard.getCurTetro();
+                Destroy(EnemyTetros[1].gameObject);
+                EnemyTetros[1] = Instantiate(tetroSpawner[temp]);
+                EnemyTetros[1].GetComponent<TetroBehav>().setParentBoard(EnemyBoard.gameObject);
+                EnemyTetros[1].GetComponent<TetroBehav>().setMovable(false);
+                EnemyTetros[1].transform.position = EnemyBoard.TSpawnPoint.transform.position;
+            }
+
+            PointSum += point * point * 10;
+            PlayerPoint.text = "점수 : " + PointSum.ToString();
+            //점수 업데이트
+
+            if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
+            {
+                newTetro();
+            }
+        }
+        else if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
         {
             int point = 0;
             for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
@@ -97,12 +153,25 @@ public class TBoard : MonoBehaviour
     }
     void DestroyLine(int row) //최하 라인 파괴
     {
-        for(int i = 0; i < 10; i++)
+
+        if (PhotonNetwork.IsConnected)
         {
-            Destroy(grid[i, row].gameObject);
-            grid[i, row] = null;
+            for (int i = 0; i < 10; i++)
+            {
+                grid[i, row].gameObject.SetActive(false);
+                grid[i, row] = null;
+            }
+            RowDown(row);
         }
-        RowDown(row);
+        else
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Destroy(grid[i, row].gameObject);
+                grid[i, row] = null;
+            }
+            RowDown(row);
+        }
     }
     void RowDown(int row) //파괴 후 테트로들 한칸 낮추기
     {
@@ -120,7 +189,8 @@ public class TBoard : MonoBehaviour
         }
     }
 
-    private void newTetro()
+    [PunRPC]
+    private void newTetro() //여기서 문제?
     {
         ControllTetro[0] = ControllTetro[1];
         ControllTetro[0].transform.position = transform.position + new Vector3(4, 19, -0.2f);
@@ -129,12 +199,22 @@ public class TBoard : MonoBehaviour
             GameOver();
         }
         ControllTetro[0].GetComponent<TetroBehav>().setMovable(true);
-
         int tetroC = Random.Range(0, 7);
-        ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
-        ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
-        ControllTetro[1].GetComponent<TetroBehav>().setMovable(false);
-        ControllTetro[1].transform.position = TSpawnPoint.transform.position;
+
+        if (PhotonNetwork.IsConnected)
+        {
+            Vector3 pos = TSpawnPoint.transform.position;
+            Quaternion rot = new Quaternion(0,0,0,0);
+            ControllTetro[1] = PhotonNetwork.Instantiate(tetroSpawner[tetroC].name, pos, rot);
+            ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
+        }
+        else
+        {
+            ControllTetro[1] = Instantiate(tetroSpawner[tetroC]);
+            ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
+            ControllTetro[1].GetComponent<TetroBehav>().setMovable(false);
+            ControllTetro[1].transform.position = TSpawnPoint.transform.position;
+        }
     }
 
     public GameObject[] getCurTetro()

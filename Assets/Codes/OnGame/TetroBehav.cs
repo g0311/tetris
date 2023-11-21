@@ -1,23 +1,50 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 public class TetroBehav : MonoBehaviour
 {
     public GameObject parentBoard;
     private Transform[,] grid;
     public bool movable = false;
     float curt;
+
+    PhotonView photonView;
     // Start is called before the first frame update
     void Start()
     {
+        photonView = GetComponent<PhotonView>();
         curt = 0;
     }
     // Update is called once per frame
     void Update()
     {
-        if (movable)
+        bool x = true;
+        foreach (Transform children in transform)
         {
+            x = x && !children.gameObject.activeSelf;
+        }
+        if (PhotonNetwork.IsConnected)
+        {
+            if (x)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+            if (movable && photonView.IsMine)
+            {
+                curt += Time.deltaTime;
+                if (curt > 1)
+                {
+                    TFall();
+                }
+            }
+        }
+        else if (movable)
+        {
+            if (x)
+            {
+                Destroy(gameObject);
+            }
             curt += Time.deltaTime;
             if (curt > 1)
             {
@@ -128,4 +155,5 @@ public class TetroBehav : MonoBehaviour
             grid[x, y] = null;
         }
     }
+   
 }

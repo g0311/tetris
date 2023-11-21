@@ -76,6 +76,7 @@ public class MenuEvents : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         base.OnJoinedLobby();
+        PhotonNetwork.LocalPlayer.NickName = PlayerData.Instance.GetCurName();
         PhotonNetwork.LoadLevel("OnlineRoom");
     }
 }

@@ -39,8 +39,11 @@ public class GameMode : MonoBehaviour
             StartCount.text = i.ToString() + "√ ";
             yield return new WaitForSeconds(1);
         }
-        P1.GetPlayerBD().enabled = true;
-        if (P2.PlayerType != -1)
+        if (P1.PlayerType != 4)
+        {
+            P1.GetPlayerBD().enabled = true;
+        }
+        if (P2.PlayerType != -1 && P2.PlayerType != 4)
         {
             P2.GetPlayerBD().enabled = true;
         }

@@ -15,7 +15,7 @@ public class TPlayer : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        if (PlayerType == -1)
+        if (PlayerType == -1 || PlayerType == 4)
         {
             bd.enabled = false;
         }
@@ -36,7 +36,7 @@ public class TPlayer : MonoBehaviourPunCallbacks
     }
     private void Update()
     {
-        if (bd.enabled != false)
+        if (bd.enabled != false && PlayerType != 4)
         {
             tController = bd.getCurTetro()[0].GetComponent<TetroBehav>();
             SetInputByInfo();
@@ -131,7 +131,6 @@ public class TPlayer : MonoBehaviourPunCallbacks
         bdcp.GetComponent<TBoard>().grid = (Transform[,])bd.grid.Clone();
         Transform[,] grid = bdcp.GetComponent<TBoard>().grid;
         //실제 보드를 기준으로 고스트 보드 업데이트
-
         TetroBehav CurT = Instantiate(bd.getCurTetro()[0]).GetComponent<TetroBehav>();
         CurT.setParentBoard(bdcp);
         //현재 테트로미노 블록 복사본 생성
