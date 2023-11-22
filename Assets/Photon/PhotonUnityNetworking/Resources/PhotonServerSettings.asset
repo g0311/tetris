@@ -42,6 +42,11 @@ MonoBehaviour:
   - OnEnable
   - newTetro
   - Update
+  - saveRPC
+  - Photonsave
+  - PhotonSave
+  - ChangeTetro
+  - OnlineGameOver
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

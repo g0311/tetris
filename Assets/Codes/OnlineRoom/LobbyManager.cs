@@ -26,6 +26,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        if (PhotonNetwork.InRoom)
+        {
+            RoomUI.SetActive(true);
+            gameObject.SetActive(false);
+        }
         PhotonNetwork.AutomaticallySyncScene = false;
         CreateRoomBtn.onClick.AddListener(CreateRoomBtnListener);
         ExitBtn.onClick.AddListener(ExitBtnListener);
@@ -117,9 +122,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-        //로비 ui 끄고 룸 ui 키기
-        gameObject.SetActive(false);
+        //룸 ui 키고 로비 ui 끄기
         RoomUI.SetActive(true);
+        gameObject.SetActive(false);
         //룸 ui에서는 준비 및 게임 시작
     }
 }

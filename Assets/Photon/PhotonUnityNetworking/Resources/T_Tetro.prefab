@@ -66,7 +66,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
+  m_SynchronizeScale: 1
   m_UseLocal: 1
 --- !u!114 &3580394151957985950
 MonoBehaviour:
@@ -86,7 +86,9 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: -7124274742598942113}
+  - {fileID: -436398398795499863}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

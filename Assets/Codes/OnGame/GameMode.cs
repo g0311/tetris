@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class GameMode : MonoBehaviour
 {
@@ -39,11 +41,8 @@ public class GameMode : MonoBehaviour
             StartCount.text = i.ToString() + "초";
             yield return new WaitForSeconds(1);
         }
-        if (P1.PlayerType != 4)
-        {
-            P1.GetPlayerBD().enabled = true;
-        }
-        if (P2.PlayerType != -1 && P2.PlayerType != 4)
+        P1.GetPlayerBD().enabled = true;
+        if (P2.PlayerType != -1)
         {
             P2.GetPlayerBD().enabled = true;
         }
@@ -78,17 +77,44 @@ public class GameMode : MonoBehaviour
                 }
                 GameOverUI.SetActive(true);
                 isGameRunning = false;
+                if (PhotonNetwork.IsConnected)
+                {
+                    ReStartBtn.gameObject.SetActive(false);
+                    MenuBtn.gameObject.SetActive(false);
+                    StartCoroutine(OnlineGameOver());
+                }
             }
         }
     }
 
     private void GoMenu() 
     {
+        if(PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.Disconnect();
+        }
         SceneManager.LoadScene("StartMenu");
     }
     private void ReStart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-
+    private IEnumerator OnlineGameOver()
+    {
+        Player[] players = PhotonNetwork.PlayerList;
+        foreach (Player player in players)
+        {
+            ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+            {
+                {"IsReady", false}
+            };
+            player.SetCustomProperties(props);
+        }
+        for (int i = 10; i >= 1; i--)
+        {
+            GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text + "\n" + i.ToString() + "초후 로비";
+            yield return new WaitForSeconds(1);
+        }
+        SceneManager.LoadScene("OnlineRoom");
+    }
 }

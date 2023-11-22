@@ -14,7 +14,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private Button ReadyBtn;
     [SerializeField]
     private Button ExitBtn;
-
     [SerializeField]
     private Text P1NameText;
     [SerializeField]
@@ -146,7 +145,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
         if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log("마스터클라이언트");
             PhotonNetwork.LoadLevel("OnGame");
         }
     }

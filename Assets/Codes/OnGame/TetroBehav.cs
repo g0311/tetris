@@ -2,13 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-public class TetroBehav : MonoBehaviour
+public class TetroBehav : MonoBehaviour, IPunObservable
 {
     public GameObject parentBoard;
     private Transform[,] grid;
     public bool movable = false;
     float curt;
-
     PhotonView photonView;
     // Start is called before the first frame update
     void Start()
@@ -24,13 +23,10 @@ public class TetroBehav : MonoBehaviour
         {
             x = x && !children.gameObject.activeSelf;
         }
+
         if (PhotonNetwork.IsConnected)
         {
-            if (x)
-            {
-                PhotonNetwork.Destroy(gameObject);
-            }
-            if (movable && photonView.IsMine)
+            if (movable)
             {
                 curt += Time.deltaTime;
                 if (curt > 1)
@@ -88,7 +84,15 @@ public class TetroBehav : MonoBehaviour
         {
             movable = false;
             transform.position -= new Vector3(0, -1, 0);
-            save();
+            if (PhotonNetwork.IsConnected)
+            {
+                Debug.Log("포톤세이브");
+                PhotonSave();
+            }
+            else
+            {
+                save();
+            }
         }
     }
     void save()
@@ -155,5 +159,45 @@ public class TetroBehav : MonoBehaviour
             grid[x, y] = null;
         }
     }
-   
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // 로컬 클라이언트에서 실행되며, 게임 오브젝트의 상태를 네트워크를 통해 전송합니다.
+            stream.SendNext(parentBoard.GetPhotonView().ViewID);
+        }
+        else
+        {
+            // 원격 클라이언트에서 실행되며, 네트워크에서 게임 오브젝트의 상태를 받아옵니다.
+            int parentBoardID = (int)stream.ReceiveNext();
+            parentBoard = PhotonView.Find(parentBoardID).gameObject;
+        }
+    }
+    void PhotonSave()
+    {
+        List<int> xValues = new List<int>();
+        List<int> yValues = new List<int>();
+
+        foreach (Transform children in transform)
+        {
+            int x = Mathf.FloorToInt(children.position.x - parentBoard.transform.position.x);
+            int y = Mathf.FloorToInt(children.position.y - parentBoard.transform.position.y);
+            grid[x, y] = children;
+
+            xValues.Add(x);
+            yValues.Add(y);
+        }
+        photonView.RPC("saveRPC", RpcTarget.Others, xValues.ToArray(), yValues.ToArray());
+    }
+    [PunRPC]
+    void saveRPC(int[] xValues, int[] yValues)
+    {
+        grid = parentBoard.GetComponent<TBoard>().grid;
+        for (int i = 0; i < xValues.Length; i++)
+        {
+            int x = xValues[i];
+            int y = yValues[i];
+            grid[x, y] = transform.GetChild(i);
+        }
+    }
 }

@@ -7,7 +7,7 @@ using Photon.Realtime;
 public class TPlayer : MonoBehaviourPunCallbacks
 {
     public int PlayerType;
-
+    public GameObject PrefabBoard;
     private TBoard bd;
     TetroBehav tController;
     GameObject bdcp;
@@ -15,13 +15,9 @@ public class TPlayer : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        if (PlayerType == -1 || PlayerType == 4)
-        {
-            bd.enabled = false;
-        }
         if (PlayerType == 3)
         {
-            bdcp = Instantiate(bd.gameObject);
+            bdcp = Instantiate(PrefabBoard);
             bdcp.GetComponent<TBoard>().isghost = true;
             bdcp.transform.parent = this.transform;
             //Debug.Log(bdcp.GetComponent<TBoard>() == null);
@@ -394,42 +390,5 @@ public class TPlayer : MonoBehaviourPunCallbacks
     public TBoard GetPlayerBD()
     {
         return bd;
-    }
-
-    private void HandlePhotonInput()
-    {
-        if (bd.getCurTetro() != null)
-        {
-            // PhotonNetwork.playerList 를 사용하여 다른 플레이어의 입력을 받아옵니다.
-            // 이를 위해, 각 플레이어는 자신의 입력을 PhotonNetwork에 전송해야 합니다.
-            // 예를 들어, 플레이어가 왼쪽 화살표 키를 누르면, 이 정보를 모든 플레이어에게 알립니다.
-            foreach (Player player in PhotonNetwork.PlayerList)
-            {
-                if (player != PhotonNetwork.LocalPlayer) // 다른 플레이어의 입력만 처리합니다.
-                {
-                    // 플레이어의 입력을 받아와서 처리합니다.
-                    // 이 예시에서는 간단하게 키 입력만을 받아오지만, 실제 게임에서는 플레이어의 전체 입력을 받아와야 합니다.
-                    string input = (string)player.CustomProperties["input"];
-                    switch (input)
-                    {
-                        case "left":
-                            tController.TMove(0);
-                            break;
-                        case "right":
-                            tController.TMove(1);
-                            break;
-                        case "rotate":
-                            tController.TRotate();
-                            break;
-                        case "down":
-                            tController.TFall();
-                            break;
-                        case "drop":
-                            tController.MovetBottom();
-                            break;
-                    }
-                }
-            }
-        }
     }
 }
