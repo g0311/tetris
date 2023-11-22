@@ -110,7 +110,7 @@ public class GameMode : MonoBehaviour
             };
             player.SetCustomProperties(props);
         }
-        for (int i = 10; i >= 1; i--)
+        for (int i = 5; i >= 1; i--)
         {
             GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text + "\n" + i.ToString() + "초후 로비";
             yield return new WaitForSeconds(1);

@@ -34,7 +34,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.AutomaticallySyncScene = false;
         CreateRoomBtn.onClick.AddListener(CreateRoomBtnListener);
         ExitBtn.onClick.AddListener(ExitBtnListener);
-        CreatingUI.GetComponentInChildren<Button>().onClick.AddListener(CreateBtnListener);
+        Button[] CreatingBtns = CreatingUI.GetComponentsInChildren<Button>();
+        CreatingBtns[0].onClick.AddListener(CreateBtnListener);
+        CreatingBtns[1].onClick.AddListener(CreateCancelBtnListener);
     }
 
     void CreateRoomBtnListener()
@@ -51,6 +53,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         SceneManager.LoadScene("StartMenu");
     }
 
+    void CreateCancelBtnListener()
+    {
+        CreatingUI.GetComponentInChildren<InputField>().text = "";
+        CreatingUI.SetActive(false);
+    }
     void CreateBtnListener()
     {
         RoomOptions roomOption = new RoomOptions();

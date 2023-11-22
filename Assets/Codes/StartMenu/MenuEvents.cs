@@ -28,7 +28,9 @@ public class MenuEvents : MonoBehaviourPunCallbacks
         _O2P.onClick.AddListener(_O2PListener);
         _AI.onClick.AddListener(_AIListener);
         _Exit.onClick.AddListener(_EXITListener);
-        LoginUI.GetComponentInChildren<Button>().onClick.AddListener(_LoginListener);
+        Button[] LoginBtns = LoginUI.GetComponentsInChildren<Button>();
+        LoginBtns[0].onClick.AddListener(_LoginListener);
+        LoginBtns[1].onClick.AddListener(_CancelListener);
     }
 
     void _1PListener()
@@ -62,6 +64,11 @@ public class MenuEvents : MonoBehaviourPunCallbacks
     void _O2PListener()
     {
         LoginUI.SetActive(true);
+    }
+    void _CancelListener()
+    {
+        LoginUI.GetComponentInChildren<InputField>().text = "";
+        LoginUI.SetActive(false);
     }
     void _LoginListener()
     {
