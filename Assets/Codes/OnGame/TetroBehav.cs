@@ -4,11 +4,11 @@ using UnityEngine;
 using Photon.Pun;
 public class TetroBehav : MonoBehaviour, IPunObservable
 {
-    public GameObject parentBoard;
-    private Transform[,] grid;
-    public bool movable = false;
+    private GameObject parentBoard; //부모 보드
+    private Transform[,] grid; //부모 보드의 정보
+    private bool movable = false; //이동 가능 판단 변수
     float curt;
-    PhotonView photonView;
+    PhotonView photonView; //동기화에 필요한 변수
     // Start is called before the first frame update
     void Start()
     {
@@ -24,27 +24,16 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             x = x && !children.gameObject.activeSelf;
         }
 
-        if (PhotonNetwork.IsConnected)
+        if (movable)    
         {
-            if (movable)
-            {
-                curt += Time.deltaTime;
-                if (curt > 1)
-                {
-                    TFall();
-                }
-            }
-        }
-        else if (movable)
-        {
-            if (x)
-            {
-                Destroy(gameObject);
-            }
             curt += Time.deltaTime;
             if (curt > 1)
             {
                 TFall();
+            }
+            if (x)
+            {
+                Destroy(gameObject);
             }
         }
     }
@@ -140,10 +129,6 @@ public class TetroBehav : MonoBehaviour, IPunObservable
     {
         return movable;
     }
-    public void setCurt(int ct)
-    {
-        curt = ct;
-    }
     public void setParentBoard(GameObject bd)
     {
         parentBoard = bd;
@@ -163,12 +148,12 @@ public class TetroBehav : MonoBehaviour, IPunObservable
     {
         if (stream.IsWriting)
         {
-            // 로컬 클라이언트에서 실행되며, 게임 오브젝트의 상태를 네트워크를 통해 전송합니다.
+            // 로컬 클라이언트에서 실행되며, 게임 오브젝트의 상태를 네트워크를 통해 전송
             stream.SendNext(parentBoard.GetPhotonView().ViewID);
         }
         else
         {
-            // 원격 클라이언트에서 실행되며, 네트워크에서 게임 오브젝트의 상태를 받아옵니다.
+            // 원격 클라이언트에서 실행되며, 네트워크에서 게임 오브젝트의 상태를 받아옴
             int parentBoardID = (int)stream.ReceiveNext();
             parentBoard = PhotonView.Find(parentBoardID).gameObject;
         }
@@ -187,6 +172,7 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             xValues.Add(x);
             yValues.Add(y);
         }
+        //다른 클라이언트의 saveRPC함수 호출
         photonView.RPC("saveRPC", RpcTarget.Others, xValues.ToArray(), yValues.ToArray());
     }
     [PunRPC]

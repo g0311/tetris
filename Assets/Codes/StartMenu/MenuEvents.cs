@@ -19,7 +19,7 @@ public class MenuEvents : MonoBehaviourPunCallbacks
     [SerializeField]
     private Button _Exit;
     [SerializeField]
-    private GameObject LoginUI;
+    private GameObject LoginUI; //Online 2P 서버 접속 전 사용할 플레이어 이름
 
     void Start()
     {
@@ -32,7 +32,7 @@ public class MenuEvents : MonoBehaviourPunCallbacks
         LoginBtns[0].onClick.AddListener(_LoginListener);
         LoginBtns[1].onClick.AddListener(_CancelListener);
     }
-
+    //각 버튼은 플레이어 이름 및 모드를 설정하고 씬을 전환
     void _1PListener()
     {
         PlayerData.Instance.SetP1Name("1P");
@@ -65,25 +65,25 @@ public class MenuEvents : MonoBehaviourPunCallbacks
     {
         LoginUI.SetActive(true);
     }
-    void _CancelListener()
+    void _CancelListener() //로그인 취소 버튼 리스너
     {
         LoginUI.GetComponentInChildren<InputField>().text = "";
         LoginUI.SetActive(false);
     }
-    void _LoginListener()
+    void _LoginListener() //로그인 버튼 리스너
     {
         PlayerData.Instance.SetCurName(LoginUI.GetComponentInChildren<InputField>().text);
-        PhotonNetwork.ConnectUsingSettings();
+        PhotonNetwork.ConnectUsingSettings(); //서버 접속 시도
     }
     public override void OnConnectedToMaster()
-    {
+    { //서버 접속 성공 시
         base.OnConnectedToMaster();
-        PhotonNetwork.JoinLobby();
+        PhotonNetwork.JoinLobby(); //로비 접속 시도
     }
     public override void OnJoinedLobby()
-    {
+    { //로비 접속 성공 시
         base.OnJoinedLobby();
         PhotonNetwork.LocalPlayer.NickName = PlayerData.Instance.GetCurName();
-        PhotonNetwork.LoadLevel("OnlineRoom");
+        PhotonNetwork.LoadLevel("OnlineRoom"); //OnlineRoom 씬 전환
     }
 }

@@ -9,28 +9,39 @@ using Photon.Realtime;
 public class GameMode : MonoBehaviour
 {
     // Start is called before the first frame update
-    public TPlayer P1;
-    public TPlayer P2;
+    [SerializeField]
+    private TPlayer P1;
+    [SerializeField]
+    private TPlayer P2;
 
-    public Text P1Name;
-    public Text P2Name;
-    
-    public GameObject GameOverUI;
-    bool isGameRunning = false;
-    bool winner = true;
+    [SerializeField]
+    private Text P1Name;
+    [SerializeField]
+    private Text P2Name;
 
-    public Button ReStartBtn;
-    public Button MenuBtn;
+    [SerializeField]
+    private GameObject GameOverUI;
+    private bool isGameRunning = false;
+    TPlayer winner;
 
-    public Text StartCount;
+    [SerializeField]
+    private Button ReStartBtn;
+    [SerializeField]
+    private Button MenuBtn;
+
+    [SerializeField]
+    private Text StartCount;
+    [SerializeField]
+    private Button exitBtn;
     void Awake()
     {
-        P1.PlayerType = PlayerData.Instance.Get1P_Mode();
-        P2.PlayerType = PlayerData.Instance.Get2P_Mode();
+        P1.setPlayerType(PlayerData.Instance.Get1P_Mode());
+        P2.setPlayerType(PlayerData.Instance.Get2P_Mode());
         P1Name.text = PlayerData.Instance.GetP1Name();
         P2Name.text = PlayerData.Instance.GetP2Name();
         ReStartBtn.onClick.AddListener(ReStart);
         MenuBtn.onClick.AddListener(GoMenu);
+        exitBtn.onClick.AddListener(EXIT);
         StartCoroutine(GameWait());
     }
 
@@ -42,7 +53,7 @@ public class GameMode : MonoBehaviour
             yield return new WaitForSeconds(1);
         }
         P1.GetPlayerBD().enabled = true;
-        if (P2.PlayerType != -1)
+        if (P2.getPlayerType() != -1)
         {
             P2.GetPlayerBD().enabled = true;
         }
@@ -57,16 +68,30 @@ public class GameMode : MonoBehaviour
     {
         if (isGameRunning)
         {
+            //P1이 먼저 탈락
             if (!P1.GetPlayerBD().enabled && P2.GetPlayerBD().enabled)
             {
-                winner = false;
+                winner = P2;
+                if(PlayerData.Instance.Get2P_Mode() == 3)
+                { //상대가 ai일시 바로 게임 종료
+                    GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text;
+                    P2.GetPlayerBD().enabled = false;
+                    GameOverUI.SetActive(true);
+                    isGameRunning = false;
+                }
             }
 
-            if (!P1.GetPlayerBD().enabled && !P2.GetPlayerBD().enabled) //이긴 애 출력 근데 혼자 할떈?
+            // P2가 먼저 탈락
+            else if (P1.GetPlayerBD().enabled && !P2.GetPlayerBD().enabled)
             {
-                if (P2.PlayerType != -1)
+                winner = P1;
+            }
+
+            if (!P1.GetPlayerBD().enabled && !P2.GetPlayerBD().enabled) //둘 다 종료 시
+            {
+                if (P2.getPlayerType() != -1) //1인 플레이가 아닐 시에 승자 출력
                 {
-                    if (winner)
+                    if (winner == P1)
                     {
                         GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P1Name.text;
                     }
@@ -89,10 +114,6 @@ public class GameMode : MonoBehaviour
 
     private void GoMenu() 
     {
-        if(PhotonNetwork.IsConnected)
-        {
-            PhotonNetwork.Disconnect();
-        }
         SceneManager.LoadScene("StartMenu");
     }
     private void ReStart()
@@ -112,9 +133,17 @@ public class GameMode : MonoBehaviour
         }
         for (int i = 5; i >= 1; i--)
         {
-            GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text + "\n" + i.ToString() + "초후 로비";
+            GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text + "\n" + i.ToString() + "초 후 로비";
             yield return new WaitForSeconds(1);
         }
         SceneManager.LoadScene("OnlineRoom");
+    }
+    private void EXIT()
+    {
+        if(PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.Disconnect();
+        }
+        GoMenu();
     }
 }

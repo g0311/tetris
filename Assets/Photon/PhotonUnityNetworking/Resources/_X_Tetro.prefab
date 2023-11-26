@@ -51,8 +51,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2719d076ea664f6428c7361e5edea3b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentBoard: {fileID: 0}
-  movable: 0
 --- !u!114 &4746322037753284809
 MonoBehaviour:
   m_ObjectHideFlags: 0

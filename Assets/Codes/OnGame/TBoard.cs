@@ -10,18 +10,22 @@ public class TBoard : MonoBehaviourPunCallbacks
     [SerializeField]
     private GameObject[] tetroSpawner; //테트로미노 배열
     private GameObject[] ControllTetro = new GameObject[2]; //현재 컨트롤 중인 테트로 및 다음에 생성될 테트로미노
-    public TBoard EnemyBoard; //상대 보드
-    public GameObject GameOverPannel; //게임 오버 출력 ui
-    public Text PlayerPoint; //보드 점수 ui
+    [SerializeField]
+    private TBoard EnemyBoard; //상대 보드
+    [SerializeField]
+    private GameObject GameOverPannel; //게임 오버 출력 ui
+    [SerializeField]
+    private Text PlayerPoint; //보드 점수 ui
     private int PointSum = 0; // 보드 점수
-    public GameObject TSpawnPoint; //다음 테트로 표현 위치
-    public bool isghost = false; //고스트 보드일시 새 테트로 생성 x
+    [SerializeField]
+    private GameObject TSpawnPoint; //다음 테트로 표현 위치
+    private bool isghost = false; //고스트 보드일시 새 테트로 생성 x
 
     public override void OnEnable() //플레이어에 따른 설정 필요
     {
         if (PhotonNetwork.IsConnected)//온라인 플레이 시
         {
-            if (GetComponentInParent<TPlayer>().PlayerType != 4)
+            if (GetComponentInParent<TPlayer>().getPlayerType() != 4)
             {
                 Vector3 pos = transform.position + new Vector3(4, 19, -0.2f);
                 Quaternion rot = new Quaternion(0, 0, 0, 0);
@@ -37,7 +41,7 @@ public class TBoard : MonoBehaviourPunCallbacks
                 ControllTetro[1].GetComponent<TetroBehav>().setParentBoard(gameObject);
             }
         }
-        else if (GetComponentInParent<TPlayer>().PlayerType != -1 && !isghost)
+        else if (GetComponentInParent<TPlayer>().getPlayerType() != -1 && !isghost)
         {
             int tetroC = Random.Range(0, 7);
             ControllTetro[0] = Instantiate(tetroSpawner[tetroC]);
@@ -55,8 +59,8 @@ public class TBoard : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        if (PhotonNetwork.IsConnected && GetComponentInParent<TPlayer>().PlayerType != 4) 
-        {//온라인 플레이 중 로컬 보드에만 작동
+        if (PhotonNetwork.IsConnected && GetComponentInParent<TPlayer>().getPlayerType() != 4)
+        {//온라인 플레이 중 로컬 플레이어
             int point = 0;
             for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
             {
@@ -67,29 +71,33 @@ public class TBoard : MonoBehaviourPunCallbacks
                 }
             }
             if (point == 2 && EnemyBoard.enabled)
-            { //2개 행 파괴 시 펜토미노 생성
+            { //2개 행 파괴 시 상대 플레이어에 펜토미노 생성
                 Debug.Log("두개 삭제");
                 int temp = Random.Range(7, 9);
                 photonView.RPC("ChangeTetro", RpcTarget.Others, temp);
             }
             if (point >= 3 && EnemyBoard.enabled)
-            { //3개 이상 행 파괴 시 펜토미노 생성
+            { //3개 이상 행 파괴 시 상대 플레이어에 펜토미노 생성
                 Debug.Log("세개 삭제");
                 int temp = Random.Range(9, 11);
                 photonView.RPC("ChangeTetro", RpcTarget.Others, temp);
             }
-            
+
             PointSum += point * point * 10;
             PlayerPoint.text = "점수 : " + PointSum.ToString();
             //점수 업데이트
-            
+
             if (!ControllTetro[0].GetComponent<TetroBehav>().getMovable())
             {
                 newTetro();
             }
         }
-        else if(PhotonNetwork.IsConnected && GetComponentInParent<TPlayer>().PlayerType == 4)
-        {//온라인 플레이 중 상대 보드에만 작동
+        else if (PhotonNetwork.IsConnected && GetComponentInParent<TPlayer>().getPlayerType() == 4)
+        {//온라인 플레이 중 상대 플레이어
+            if(PhotonNetwork.PlayerList.Length != 2)
+            {//플레이어가 나갔을 시 작동
+                GameOver();
+            }
             int point = 0;
             for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
             {
@@ -104,7 +112,7 @@ public class TBoard : MonoBehaviourPunCallbacks
             PlayerPoint.text = "점수 : " + PointSum.ToString();
         }
         else if (!isghost) //고스트 보드는 줄 파괴, 테트로 생성 x
-        {//로컬 플레이 시 작동
+        {//로컬 플레이
             int point = 0;
             for (int i = 0; i < 20; i++) //모든 행에 대해서 검사 후 행 파괴
             {
@@ -227,6 +235,10 @@ public class TBoard : MonoBehaviourPunCallbacks
     public GameObject[] getCurTetro()
     {
         return ControllTetro;
+    }
+    public void setisGhost(bool isg)
+    {
+        isghost = isg;
     }
 
     public void GameOver()

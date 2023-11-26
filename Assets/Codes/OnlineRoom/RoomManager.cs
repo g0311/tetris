@@ -33,26 +33,27 @@ public class RoomManager : MonoBehaviourPunCallbacks
     }
     public override void OnEnable()
     {
+        PhotonNetwork.AddCallbackTarget(this);
         UpdatePanel();
     }
     private void Update()
     {
-        Player[] players = PhotonNetwork.PlayerList;
-        foreach(Player pl in players)
+        Player[] players = PhotonNetwork.PlayerList; //현재 룸에 접속한 플레이어의 배열을 반환하는 메서드
+        foreach (Player pl in players)
         {
-            if ((bool)pl.CustomProperties["IsReadyChanged"])
+            if ((bool)pl.CustomProperties["IsReadyChanged"]) //플레이어의 ready 변수가 바뀌었는지 판단
             {
                 ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
-                {
-                    { "IsReadyChanged", false },
-                };
-                pl.SetCustomProperties(props);
-                UpdatePanel();
+            {
+                { "IsReadyChanged", false },
+            };
+                pl.SetCustomProperties(props); //플레이어의 ready changed 속성 교체
+                UpdatePanel(); //패널 업데이트
             }
         }
     }
     private void ReadyListener()
-    {
+    { //로컬 플레이어의 준비 속성 교체 및 패널 업데이트
         bool currentReadyState = (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
         ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
         {
@@ -64,28 +65,46 @@ public class RoomManager : MonoBehaviourPunCallbacks
     }
     private void ExitListener()
     {
-        PhotonNetwork.LeaveRoom();
-        gameObject.SetActive(false);
-        LobbyUI.SetActive(true);
+        PhotonNetwork.LeaveRoom();//방 나가기
     }
     public override void OnLeftRoom()
-    {
+    { //방 나가졌을 시, OnConnectedToMaster이 호출 됨
         base.OnLeftRoom();
-        PhotonNetwork.AutomaticallySyncScene = false;
     }
-
+    public override void OnConnectedToMaster()
+    { //로비 참가
+        base.OnConnectedToMaster();
+        PhotonNetwork.JoinLobby();
+    }
+    public override void OnJoinedLobby()
+    { //로비 참가 성공 시 UI 초기화
+        base.OnJoinedLobby();
+        Debug.Log(PhotonNetwork.InLobby);
+        LobbyUI.SetActive(true);
+        PhotonNetwork.AutomaticallySyncScene = false;
+        gameObject.SetActive(false);
+    }
     private void UpdatePanel()
-    {
+    { //플레이어의 속성 및 정보들을 통해 UI 업데이트
         Player[] players = PhotonNetwork.PlayerList;
+        Debug.Log(players.Length);
         if (players.Length > 0)
         {
             P1NameText.text = players[0].NickName;
             P1ReadyText.text = (bool)players[0].CustomProperties["IsReady"] ? "Ready" : "Not Ready";
         }
+
         if (players.Length > 1)
         {
+            PhotonNetwork.CurrentRoom.IsVisible = false;
             P2NameText.text = players[1].NickName;
             P2ReadyText.text = (bool)players[1].CustomProperties["IsReady"] ? "Ready" : "Not Ready";
+        }
+        else
+        {
+            PhotonNetwork.CurrentRoom.IsVisible = true;
+            P2NameText.text = "";
+            P2ReadyText.text = "";
         }
 
         bool allPlayersReady = true;
@@ -103,23 +122,20 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
+    { //플레이어가 룸에 접속시 UI업데이트
         base.OnPlayerEnteredRoom(newPlayer);
         UpdatePanel();
-        Debug.Log("나감");
     }
     public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
+    { //플레이어가 방에 나갈 시 UI업데이트
         base.OnPlayerLeftRoom(otherPlayer);
-        // 플레이어가 방을 나가면 패널을 업데이트합니다.
         UpdatePanel();
     }
-
     private void StartGame()
     {
         IsGameStarted = true;
         PhotonNetwork.CurrentRoom.IsVisible = false;
-        PhotonNetwork.AutomaticallySyncScene = true;
+        PhotonNetwork.AutomaticallySyncScene = true; //씬 이동이 마스터 클라이언트(방장)에 동기화 됨
         Player[] players = PhotonNetwork.PlayerList;
         int Pindex = -1;
         for (int i = 0; i < players.Length; i++)
@@ -129,6 +145,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
                 Pindex = i;
             }
         }
+        //현재 클라이언트 플레이어의 위치에 따라 모드 초기화
         if (Pindex == 0)
         {
             PlayerData.Instance.SetP1Name(players[0].NickName);

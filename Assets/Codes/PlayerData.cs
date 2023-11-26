@@ -7,7 +7,7 @@ public class PlayerData : MonoBehaviour
     // Start is called before the first frame update
     public static PlayerData Instance { get; private set; }
 
-    private void Awake()
+    private void Awake() //ΩÃ±€≈Ê ∆–≈œ
     {
         Screen.SetResolution(1280, 720, false);
         if (Instance == null)
@@ -21,11 +21,11 @@ public class PlayerData : MonoBehaviour
         }
     }
 
-    int _1P_Mode;
-    int _2P_Mode;
-    string CurPlayer_name;
-    string _1p_name;
-    string _2p_name;
+    private int _1P_Mode;
+    private int _2P_Mode;
+    private string CurPlayer_name;
+    private string _1p_name;
+    private string _2p_name;
 
     public void Set1P_Mode(int mode)
     {
