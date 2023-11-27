@@ -219,12 +219,13 @@ public class TPlayer : MonoBehaviourPunCallbacks
     private float CalculateBoardScore(Transform[,] grid)
     {
         Transform[,] Simgrid = (Transform[,])grid.Clone();
-        // 복제 배열 추가, 그 복제배열에 대해서 업데이트
+        // 복제 배열 추가, 그 복제배열에 대해서 업데이트(꽉 찬 행 제거했다고 가정)
         for (int y = 0; y < 20; y++)
         {
             if (IsRowFull(Simgrid, y))
-            {
+            { // y행이 꽉 찬 상태일시
                 AssumeDeleteRow(Simgrid, y);
+                //해당 행을 삭제하고 모든 행을 내렸다고 가정
             }
         }
         // 각 지표를 계산하여 보드의 점수를 계산
@@ -249,18 +250,19 @@ public class TPlayer : MonoBehaviourPunCallbacks
     }
 
     private void AssumeDeleteRow(Transform[,] grid, int y)
-    { //행이 꽉 찼을 시, 제거를 가정하는 메서드 (참조 배열이기 때문에 제거 불가)
+    { //행이 꽉 찼을 시, 제거를 가정하는 메서드 (참조 배열이기 때문에 제거시 실제 블럭 제거됨)
         for (int i = y; i < 19; i++)
         {
             for (int j = 0; j < 10; j++)
             {
                 grid[j, i] = grid[j, i + 1];
+                //실제 블록 제거 없이 행을 한칸씩 낮춤
             }
         }
         for (int j = 0; j < 10; j++)
         {
             grid[j, 19] = null;
-        }
+        } //행 내렸을 시 맨 위의 행은 비워짐
     }
 
     private float CalculateHoles(Transform[,] grid)

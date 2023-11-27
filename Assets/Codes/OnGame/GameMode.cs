@@ -34,7 +34,7 @@ public class GameMode : MonoBehaviour
     [SerializeField]
     private Button exitBtn;
     void Awake()
-    {
+    { //각 플레이어 초기화 및 버튼 리스너 부착
         P1.setPlayerType(PlayerData.Instance.Get1P_Mode());
         P2.setPlayerType(PlayerData.Instance.Get2P_Mode());
         P1Name.text = PlayerData.Instance.GetP1Name();
@@ -46,7 +46,7 @@ public class GameMode : MonoBehaviour
     }
 
     private IEnumerator GameWait()
-    {
+    { //비동기로 3초 대기후 게임 시작 설정
         for (int i = 3; i >= 1; i--)
         {
             StartCount.text = i.ToString() + "초";
@@ -57,6 +57,7 @@ public class GameMode : MonoBehaviour
         {
             P2.GetPlayerBD().enabled = true;
         }
+        //보드 스크립트를 활성화 시킴으로 게임 시작
         StartCount.text = "Start";
         yield return new WaitForSeconds(1);
         StartCount.text = "";
@@ -80,9 +81,8 @@ public class GameMode : MonoBehaviour
                     isGameRunning = false;
                 }
             }
-
             // P2가 먼저 탈락
-            else if (P1.GetPlayerBD().enabled && !P2.GetPlayerBD().enabled)
+            if (P1.GetPlayerBD().enabled && !P2.GetPlayerBD().enabled)
             {
                 winner = P1;
             }
@@ -103,7 +103,7 @@ public class GameMode : MonoBehaviour
                 GameOverUI.SetActive(true);
                 isGameRunning = false;
                 if (PhotonNetwork.IsConnected)
-                {
+                { //온라인 플레이일시 5초후 로비로 돌아감
                     ReStartBtn.gameObject.SetActive(false);
                     MenuBtn.gameObject.SetActive(false);
                     StartCoroutine(OnlineGameOver());
@@ -133,7 +133,8 @@ public class GameMode : MonoBehaviour
         }
         for (int i = 5; i >= 1; i--)
         {
-            GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + P2Name.text + "\n" + i.ToString() + "초 후 로비";
+            string winnername = (winner == P1 ? P1Name.text : P2Name.text);
+            GameOverUI.transform.GetChild(0).GetComponent<Text>().text = "Winner\n" + winnername + "\n" + i.ToString() + "초 후 로비";
             yield return new WaitForSeconds(1);
         }
         SceneManager.LoadScene("OnlineRoom");

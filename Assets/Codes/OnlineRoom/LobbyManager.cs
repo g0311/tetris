@@ -86,7 +86,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     { //방 목록 업데이트시 자동으로 호출되는 메서드
         base.OnRoomListUpdate(roomList);
-        Debug.Log("업데이트 됨");
         UpdateRoomList(roomList);
     }
 

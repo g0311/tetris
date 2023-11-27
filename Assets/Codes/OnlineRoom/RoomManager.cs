@@ -79,7 +79,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     { //로비 참가 성공 시 UI 초기화
         base.OnJoinedLobby();
-        Debug.Log(PhotonNetwork.InLobby);
         LobbyUI.SetActive(true);
         PhotonNetwork.AutomaticallySyncScene = false;
         gameObject.SetActive(false);
@@ -87,7 +86,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private void UpdatePanel()
     { //플레이어의 속성 및 정보들을 통해 UI 업데이트
         Player[] players = PhotonNetwork.PlayerList;
-        Debug.Log(players.Length);
         if (players.Length > 0)
         {
             P1NameText.text = players[0].NickName;
@@ -122,12 +120,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
         }
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)
-    { //플레이어가 룸에 접속시 UI업데이트
+    { //플레이어가 방에 접속시 UI업데이트
         base.OnPlayerEnteredRoom(newPlayer);
         UpdatePanel();
     }
     public override void OnPlayerLeftRoom(Player otherPlayer)
-    { //플레이어가 방에 나갈 시 UI업데이트
+    { //플레이어가 방에서 나갈 시 UI업데이트
         base.OnPlayerLeftRoom(otherPlayer);
         UpdatePanel();
     }

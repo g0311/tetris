@@ -7,23 +7,19 @@ public class TetroBehav : MonoBehaviour, IPunObservable
     private GameObject parentBoard; //부모 보드
     private Transform[,] grid; //부모 보드의 정보
     private bool movable = false; //이동 가능 판단 변수
-    float curt;
+    private float curt;
     PhotonView photonView; //동기화에 필요한 변수
+
     // Start is called before the first frame update
     void Start()
     {
         photonView = GetComponent<PhotonView>();
         curt = 0;
     }
+
     // Update is called once per frame
     void Update()
     {
-        bool x = true;
-        foreach (Transform children in transform)
-        {
-            x = x && !children.gameObject.activeSelf;
-        }
-
         if (movable)    
         {
             curt += Time.deltaTime;
@@ -31,7 +27,15 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             {
                 TFall();
             }
-            if (x)
+        }
+        else
+        {
+            bool isDestroyed = true;
+            foreach (Transform children in transform)
+            {
+                isDestroyed = isDestroyed && !children.gameObject.activeSelf;
+            } //테트로미노의 모든 블록이 비활성화된 상태인지 확인
+            if (isDestroyed)
             {
                 Destroy(gameObject);
             }
@@ -51,14 +55,12 @@ public class TetroBehav : MonoBehaviour, IPunObservable
         {
             int x = Mathf.RoundToInt(children.position.x - parentBoard.transform.position.x); // 한 타일의 x좌표
             int y = Mathf.RoundToInt(children.position.y - parentBoard.transform.position.y); // 한 타일의 y좌표
-            //근데 이거 얘네 좌표가 절대 좌표 기준 아님? 그러면 좌표알아야함
             if (x < 0 || x >= 10 || y < 0 || y >= 22)
             {
                 return false;
             }
             if (grid[x, y] != null)
             {
-                //Debug.Log(x + " error " + y);
                 return false;
             }
         }
@@ -75,7 +77,6 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             transform.position -= new Vector3(0, -1, 0);
             if (PhotonNetwork.IsConnected)
             {
-                Debug.Log("포톤세이브");
                 PhotonSave();
             }
             else
@@ -84,13 +85,12 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             }
         }
     }
-    void save()
+    private void save()
     {
         foreach (Transform children in transform)
         {
             int x = Mathf.FloorToInt(children.position.x - parentBoard.transform.position.x);
             int y = Mathf.FloorToInt(children.position.y - parentBoard.transform.position.y);
-            //Debug.Log(x + " save " + y);
             grid[x, y] = children;
         }
     }
@@ -140,7 +140,6 @@ public class TetroBehav : MonoBehaviour, IPunObservable
         {
             int x = Mathf.FloorToInt(children.position.x - parentBoard.transform.position.x);
             int y = Mathf.FloorToInt(children.position.y - parentBoard.transform.position.y);
-            //Debug.Log(x + " save " + y);
             grid[x, y] = null;
         }
     }
@@ -172,12 +171,12 @@ public class TetroBehav : MonoBehaviour, IPunObservable
             xValues.Add(x);
             yValues.Add(y);
         }
-        //다른 클라이언트의 saveRPC함수 호출
+        //다른 클라이언트에게(상대 플레이어 클라이언트) saveRPC함수 호출
         photonView.RPC("saveRPC", RpcTarget.Others, xValues.ToArray(), yValues.ToArray());
     }
     [PunRPC]
     void saveRPC(int[] xValues, int[] yValues)
-    {
+    { //로컬 클라이언트의 상대 보드 정보 갱신
         grid = parentBoard.GetComponent<TBoard>().grid;
         for (int i = 0; i < xValues.Length; i++)
         {
